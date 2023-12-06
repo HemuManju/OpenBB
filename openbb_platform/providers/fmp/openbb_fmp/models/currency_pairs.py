@@ -1,26 +1,26 @@
-"""FMP Currency available pairs fetcher."""
+"""FMP Currency Available Pairs Model."""
 
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.currency_pairs import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.currency_pairs import (
     CurrencyPairsData,
     CurrencyPairsQueryParams,
 )
+from openbb_fmp.utils.helpers import get_data_many
 from pydantic import Field
 
 
 class FMPCurrencyPairsQueryParams(CurrencyPairsQueryParams):
-    """FMP Currency available pairs Query.
+    """FMP Currency Available Pairs Query.
 
     Source: http://site.financialmodelingprep.com/developer/docs/stock-ticker-symbol-lookup-api/?direct=true
     """
 
 
 class FMPCurrencyPairsData(CurrencyPairsData):
-    """FMP Currency available pairs Data."""
+    """FMP Currency Available Pairs Data."""
 
     symbol: str = Field(description="Symbol of the currency pair.")
     currency: str = Field(description="Base currency of the currency pair.")

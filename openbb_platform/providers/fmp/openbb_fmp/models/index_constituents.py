@@ -1,20 +1,19 @@
-"""FMP Market Indices end of day fetcher."""
-
+"""FMP Index Constituents Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.index_constituents import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.index_constituents import (
     IndexConstituentsData,
     IndexConstituentsQueryParams,
 )
+from openbb_fmp.utils.helpers import get_data_many
 from pydantic import field_validator
 
 
 class FMPIndexConstituentsQueryParams(IndexConstituentsQueryParams):
-    """FMP Index Constituents query.
+    """FMP Index Constituents Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/list-of-dow-companies-api/
             https://site.financialmodelingprep.com/developer/docs/list-of-sp-500-companies-api/
@@ -23,7 +22,7 @@ class FMPIndexConstituentsQueryParams(IndexConstituentsQueryParams):
 
 
 class FMPIndexConstituentsData(IndexConstituentsData):
-    """FMP Index Constituents data."""
+    """FMP Index Constituents Data."""
 
     __alias_dict__ = {"headquarter": "headQuarter"}
 

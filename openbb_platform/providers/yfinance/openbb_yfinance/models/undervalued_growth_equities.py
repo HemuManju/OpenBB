@@ -1,11 +1,12 @@
-"""Yahoo Finance undervalued growth equities fetcher."""
+"""Yahoo Finance Asset Undervalued Growth Tech Equities Model."""
+
 import re
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import requests
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_performance import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_performance import (
     EquityPerformanceData,
     EquityPerformanceQueryParams,
 )
@@ -13,14 +14,14 @@ from pydantic import Field
 
 
 class YFUndervaluedGrowthEquitiesQueryParams(EquityPerformanceQueryParams):
-    """YF asset performance undervalued growth equities QueryParams.
+    """Yahoo Finance Asset Undervalued Growth Tech Equities Query.
 
     Source: https://finance.yahoo.com/screener/predefined/undervalued_growth_stocks
     """
 
 
 class YFUndervaluedGrowthEquitiesData(EquityPerformanceData):
-    """YF asset performance undervalued growth equities Data."""
+    """Yahoo Finance Asset Undervalued Growth Tech Equities Data."""
 
     __alias_dict__ = {
         "symbol": "Symbol",
@@ -51,7 +52,7 @@ class YFUndervaluedGrowthEquitiesFetcher(
         YFUndervaluedGrowthEquitiesQueryParams, List[YFUndervaluedGrowthEquitiesData]
     ]
 ):
-    """YF asset performance undervalued growth equities Fetcher."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(
@@ -77,7 +78,8 @@ class YFUndervaluedGrowthEquitiesFetcher(
         df = (
             pd.read_html(html_clean, header=None)[0]
             .dropna(how="all", axis=1)
-            .replace(float("NaN"), "")
+            .fillna("-")
+            .replace("-", None)
         )
         return df
 
@@ -93,7 +95,6 @@ class YFUndervaluedGrowthEquitiesFetcher(
         data["Avg Vol (3 month)"] = (
             data["Avg Vol (3 month)"].str.replace("M", "").astype(float) * 1000000
         )
-        data = data.apply(pd.to_numeric, errors="ignore")
         data = data.to_dict(orient="records")
         data = sorted(data, key=lambda d: d["Volume"], reverse=query.sort == "desc")
         return [YFUndervaluedGrowthEquitiesData.model_validate(d) for d in data]

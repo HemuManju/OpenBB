@@ -1,15 +1,15 @@
-"""OECD Forecast GDP Fetcher."""
+"""OECD Forecast GDP Model."""
 
 import re
 from datetime import date
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from openbb_oecd.utils import constants, helpers
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.gdp_forecast import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.gdp_forecast import (
     GdpForecastData,
     GdpForecastQueryParams,
 )
+from openbb_oecd.utils import constants, helpers
 from pydantic import Field, field_validator
 
 gdp_countries = tuple(constants.COUNTRY_TO_CODE_GDP_FORECAST.keys())
@@ -17,7 +17,7 @@ GDPCountriesLiteral = Literal[gdp_countries]  # type: ignore
 
 
 class OECDGdpForecastQueryParams(GdpForecastQueryParams):
-    """OECD GDP Forecast query."""
+    """OECD GDP Forecast Query."""
 
     country: GDPCountriesLiteral = Field(
         description="Country to get GDP for.", default="united_states"
@@ -25,7 +25,7 @@ class OECDGdpForecastQueryParams(GdpForecastQueryParams):
 
 
 class OECDGdpForecastData(GdpForecastData):
-    """OECD GDP Forecast data."""
+    """OECD GDP Forecast Data."""
 
     @field_validator("date", mode="before")
     @classmethod
@@ -49,7 +49,7 @@ class OECDGdpForecastData(GdpForecastData):
 class OECDGdpForecastFetcher(
     Fetcher[OECDGdpForecastQueryParams, List[OECDGdpForecastData]]
 ):
-    """OECD GDP Forecast Fetcher."""
+    """Transform the query, extract and transform the data from the OECD endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> OECDGdpForecastQueryParams:

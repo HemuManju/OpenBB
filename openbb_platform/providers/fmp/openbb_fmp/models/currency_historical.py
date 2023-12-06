@@ -1,21 +1,21 @@
-"""FMP Currency end of day fetcher."""
+"""FMP Currency Historical Price Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_fmp.utils.helpers import get_data_many, get_querystring
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.currency_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.currency_historical import (
     CurrencyHistoricalData,
     CurrencyHistoricalQueryParams,
 )
+from openbb_fmp.utils.helpers import get_data_many, get_querystring
 from pydantic import Field
 
 
 class FMPCurrencyHistoricalQueryParams(CurrencyHistoricalQueryParams):
-    """FMP Currency end of day Query.
+    """FMP Currency Historical Price Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/#Historical-Forex-Price
     """
@@ -26,7 +26,7 @@ class FMPCurrencyHistoricalQueryParams(CurrencyHistoricalQueryParams):
 
 
 class FMPCurrencyHistoricalData(CurrencyHistoricalData):
-    """FMP Currency end of day Data."""
+    """FMP Currency Historical Price Data."""
 
     adj_close: Optional[float] = Field(
         default=None, description="Adjusted Close Price of the symbol."

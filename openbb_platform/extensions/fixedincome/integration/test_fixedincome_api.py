@@ -3,7 +3,7 @@ import base64
 import pytest
 import requests
 from openbb_core.env import Env
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
 
 # pylint: disable=redefined-outer-name
 
@@ -22,11 +22,13 @@ def headers():
     [({"start_date": "2023-01-01", "end_date": "2023-06-06"})],
 )
 @pytest.mark.integration
-def test_fixedincome_government_treasury(params, headers):
+def test_fixedincome_government_treasury_rates(params, headers):
     params = {p: v for p, v in params.items() if v}
 
     query_str = get_querystring(params, [])
-    url = f"http://0.0.0.0:8000/api/v1/fixedincome/government/treasury?{query_str}"
+    url = (
+        f"http://0.0.0.0:8000/api/v1/fixedincome/government/treasury_rates?{query_str}"
+    )
     result = requests.get(url, headers=headers, timeout=10)
     assert isinstance(result, requests.Response)
     assert result.status_code == 200
@@ -316,7 +318,7 @@ def test_fixedincome_corporate_commercial_paper(params, headers):
 
     query_str = get_querystring(params, [])
     url = (
-        f"http://0.0.0.0:8000/api/v1/fixedincome/corporate/commerical_paper?{query_str}"
+        f"http://0.0.0.0:8000/api/v1/fixedincome/corporate/commercial_paper?{query_str}"
     )
     result = requests.get(url, headers=headers, timeout=10)
     assert isinstance(result, requests.Response)
@@ -349,7 +351,7 @@ def test_fixedincome_corporate_spot_rates(params, headers):
 
 @pytest.mark.parametrize(
     "params",
-    [({"date": "2023-01-01", "yield_curve": ["spot"]})],
+    [({"date": "2023-01-01", "yield_curve": "spot"})],
 )
 @pytest.mark.integration
 def test_fixedincome_corporate_hqm(params, headers):
@@ -429,6 +431,44 @@ def test_fixedincome_government_eu_yield_curve(params, headers):
     url = (
         f"http://0.0.0.0:8000/api/v1/fixedincome/government/eu_yield_curve?{query_str}"
     )
+    result = requests.get(url, headers=headers, timeout=30)
+    assert isinstance(result, requests.Response)
+    assert result.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        (
+            {
+                "start_date": "2023-09-01",
+                "end_date": "2023-11-16",
+                "cusip": None,
+                "page_size": None,
+                "page_num": None,
+                "security_type": None,
+                "provider": "government_us",
+            }
+        ),
+        (
+            {
+                "start_date": "2023-09-01",
+                "end_date": "2023-11-16",
+                "cusip": None,
+                "page_size": None,
+                "page_num": None,
+                "security_type": "Bond",
+                "provider": "government_us",
+            }
+        ),
+    ],
+)
+@pytest.mark.integration
+def test_fixedincome_government_treasury_auctions(params, headers):
+    params = {p: v for p, v in params.items() if v}
+
+    query_str = get_querystring(params, [])
+    url = f"http://0.0.0.0:8000/api/v1/fixedincome/government/treasury_auctions?{query_str}"
     result = requests.get(url, headers=headers, timeout=30)
     assert isinstance(result, requests.Response)
     assert result.status_code == 200

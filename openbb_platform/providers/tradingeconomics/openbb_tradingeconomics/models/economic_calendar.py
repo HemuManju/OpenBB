@@ -1,15 +1,15 @@
-"""Trading Economics Earnings Calendar fetcher."""
+"""Trading Economics Economic Calendar Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.economic_calendar import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.economic_calendar import (
     EconomicCalendarData,
     EconomicCalendarQueryParams,
 )
-from openbb_provider.utils.helpers import make_request
+from openbb_core.provider.utils.helpers import make_request
 from openbb_tradingeconomics.utils import url_generator
 from openbb_tradingeconomics.utils.countries import country_list
 from pandas import to_datetime
@@ -35,21 +35,19 @@ GROUPS = Literal[
 
 
 class TEEconomicCalendarQueryParams(EconomicCalendarQueryParams):
-    """TE Economic Calendar Query.
+    """Trading Economics Economic Calendar Query.
 
     Source: https://docs.tradingeconomics.com/economic_calendar/
     """
 
-    country: Optional[Union[str, List[str]]] = Field(
-        default=None,
-        description="Country of the event",
-    )
     # TODO: Probably want to figure out the list we can use.
-    importance: IMPORTANCE = Field(
-        default=None,
-        description="Importance of the event.",
+    country: Optional[Union[str, List[str]]] = Field(
+        default=None, description="Country of the event"
     )
-    group: GROUPS = Field(default=None, description="Grouping of events")
+    importance: Optional[IMPORTANCE] = Field(
+        default=None, description="Importance of the event."
+    )
+    group: Optional[GROUPS] = Field(default=None, description="Grouping of events")
 
     @field_validator("country", mode="before", check_fields=False)
     @classmethod
@@ -63,11 +61,11 @@ class TEEconomicCalendarQueryParams(EconomicCalendarQueryParams):
     @classmethod
     def importance_to_number(cls, v):
         string_to_value = {"Low": 1, "Medium": 2, "High": 3}
-        return string_to_value[v] if v else None
+        return string_to_value.get(v, None)
 
 
 class TEEconomicCalendarData(EconomicCalendarData):
-    """TE Economic Calendar Data."""
+    """Trading Economics Economic Calendar Data."""
 
     __alias_dict__ = {
         "date": "Date",
@@ -102,7 +100,7 @@ class TEEconomicCalendarFetcher(
         List[TEEconomicCalendarData],
     ]
 ):
-    """Transform the query, extract and transform the data from the TE endpoints."""
+    """Transform the query, extract and transform the data from the Trading Economics endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> TEEconomicCalendarQueryParams:

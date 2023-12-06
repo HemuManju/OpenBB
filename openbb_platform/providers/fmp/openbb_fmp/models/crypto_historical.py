@@ -1,23 +1,23 @@
-"""FMP Cryptos end of day fetcher."""
+"""FMP Cryptos Historical Price Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_fmp.utils.helpers import get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.crypto_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.crypto_historical import (
     CryptoHistoricalData,
     CryptoHistoricalQueryParams,
 )
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
+from openbb_fmp.utils.helpers import get_data_many
 from pydantic import Field, NonNegativeInt
 
 
 class FMPCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
     # noqa: E501
-    """FMP Crypto end of day Query.
+    """FMP Crypto Historical Price Query.
 
     Source:
     https://site.financialmodelingprep.com/developer/docs/cryptocurrency-historical-data-api/#Historical-Daily-Prices
@@ -32,7 +32,7 @@ class FMPCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
 
 
 class FMPCryptoHistoricalData(CryptoHistoricalData):
-    """FMP Crypto end of day Data."""
+    """FMP Crypto Historical Price Data."""
 
     adj_close: Optional[float] = Field(
         default=None, description="Adjusted Close Price of the symbol."

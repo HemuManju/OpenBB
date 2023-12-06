@@ -1,11 +1,11 @@
-"""CBOE Futures Curve Fetcher."""
+"""CBOE Futures Curve Model."""
 
 # IMPORT STANDARD
 from typing import Any, Dict, List, Optional
 
 from openbb_cboe.utils.helpers import get_settlement_prices
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.futures_curve import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.futures_curve import (
     FuturesCurveData,
     FuturesCurveQueryParams,
 )
@@ -31,6 +31,8 @@ class CboeFuturesCurveFetcher(
         List[CboeFuturesCurveData],
     ]
 ):
+    """Transform the query, extract and transform the data from the CBOE endpoints."""
+
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> CboeFuturesCurveQueryParams:
         return CboeFuturesCurveQueryParams(**params)

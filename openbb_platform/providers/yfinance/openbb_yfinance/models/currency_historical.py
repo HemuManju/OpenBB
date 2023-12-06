@@ -1,4 +1,4 @@
-"""yfinance Currency End of Day fetcher."""
+"""Yahoo Finance Currency Price Model."""
 # ruff: noqa: SIM105
 
 
@@ -6,13 +6,13 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.currency_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.currency_historical import (
     CurrencyHistoricalData,
     CurrencyHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_provider.utils.errors import EmptyDataError
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_yfinance.utils.helpers import yf_download
 from openbb_yfinance.utils.references import INTERVALS, PERIODS
 from pandas import to_datetime
@@ -20,7 +20,7 @@ from pydantic import Field
 
 
 class YFinanceCurrencyHistoricalQueryParams(CurrencyHistoricalQueryParams):
-    """YFinance Currency End of Day Query.
+    """Yahoo Finance Currency Price Query.
 
     Source: https://finance.yahoo.com/currencies/
     """
@@ -32,7 +32,7 @@ class YFinanceCurrencyHistoricalQueryParams(CurrencyHistoricalQueryParams):
 
 
 class YFinanceCurrencyHistoricalData(CurrencyHistoricalData):
-    """YFinance Currency End of Day Data."""
+    """Yahoo Finance Currency Price Data."""
 
 
 class YFinanceCurrencyHistoricalFetcher(
@@ -41,7 +41,7 @@ class YFinanceCurrencyHistoricalFetcher(
         List[YFinanceCurrencyHistoricalData],
     ]
 ):
-    """Transform the query, extract and transform the data from the yfinance endpoints."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(
@@ -70,7 +70,7 @@ class YFinanceCurrencyHistoricalFetcher(
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:
-        """Return the raw data from the yfinance endpoint."""
+        """Return the raw data from the Yahoo Finance endpoint."""
         data = yf_download(
             query.symbol,
             start=query.start_date,

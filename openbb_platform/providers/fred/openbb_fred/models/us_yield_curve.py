@@ -1,8 +1,13 @@
-"""FRED US Yield Curve."""
+"""FRED US Yield Curve Model."""
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.us_yield_curve import (
+    USYieldCurveData,
+    USYieldCurveQueryParams,
+)
 from openbb_fred.utils.fred_base import Fred
 from openbb_fred.utils.fred_helpers import (
     YIELD_CURVE_NOMINAL_RATES,
@@ -10,25 +15,20 @@ from openbb_fred.utils.fred_helpers import (
     YIELD_CURVE_SERIES_NOMINAL,
     YIELD_CURVE_SERIES_REAL,
 )
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.us_yield_curve import (
-    USYieldCurveData,
-    USYieldCurveQueryParams,
-)
 
 
 class FREDYieldCurveQueryParams(USYieldCurveQueryParams):
-    """Fred Yield Curve query."""
+    """FRED US Yield Curve Query."""
 
 
 class FREDYieldCurveData(USYieldCurveData):
-    """Fred Yield Curve data."""
+    """FRED US Yield Curve Data."""
 
 
 class FREDYieldCurveFetcher(
     Fetcher[FREDYieldCurveQueryParams, List[Dict[str, List[FREDYieldCurveData]]]]
 ):
-    """FRED Yield Curve Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDYieldCurveData
 

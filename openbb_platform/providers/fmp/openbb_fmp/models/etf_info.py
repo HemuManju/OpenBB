@@ -1,15 +1,18 @@
-"""FMP ETF Info fetcher."""
+"""FMP ETF Info Model."""
 
 from typing import Any, Dict, List, Optional
 
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.etf_info import (
+    EtfInfoData,
+    EtfInfoQueryParams,
+)
 from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.etf_info import EtfInfoData, EtfInfoQueryParams
 from pydantic import Field
 
 
 class FMPEtfInfoQueryParams(EtfInfoQueryParams):
-    """FMP ETF Info Query Params."""
+    """FMP ETF Info Query."""
 
 
 class FMPEtfInfoData(EtfInfoData):

@@ -1,20 +1,20 @@
-"""Polygon Company News."""
+"""Polygon Company News Model."""
 
 
 from typing import Any, Dict, List, Literal, Optional
 
-from openbb_polygon.utils.helpers import get_data_many, get_date_condition
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.company_news import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.company_news import (
     CompanyNewsData,
     CompanyNewsQueryParams,
 )
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
+from openbb_polygon.utils.helpers import get_data_many, get_date_condition
 from pydantic import BaseModel, Field, field_validator
 
 
 class PolygonCompanyNewsQueryParams(CompanyNewsQueryParams):
-    """Polygon Company News query.
+    """Polygon Company News Query.
 
     Source: https://polygon.io/docs/stocks/get_v2_reference_news
     """
@@ -36,7 +36,7 @@ class PolygonCompanyNewsQueryParams(CompanyNewsQueryParams):
 
 
 class PolygonPublisher(BaseModel):
-    """PolygonPublisher data model."""
+    """PolygonPublisher Data Model."""
 
     favicon_url: str = Field(description="Favicon URL.")
     homepage_url: str = Field(description="Homepage URL.")
@@ -45,13 +45,20 @@ class PolygonPublisher(BaseModel):
 
 
 class PolygonCompanyNewsData(CompanyNewsData):
-    """Source: https://polygon.io/docs/stocks/get_v2_reference_news."""
+    """Polygon Company News Data."""
 
     __alias_dict__ = {
+        "symbols": "tickers",
         "url": "article_url",
         "text": "description",
         "date": "published_utc",
     }
+
+    @field_validator("symbols", mode="before", check_fields=False)
+    @classmethod
+    def symbols_string(cls, v):
+        """Symbols string validator."""
+        return ",".join(v)
 
     amp_url: Optional[str] = Field(default=None, description="AMP URL.")
     author: Optional[str] = Field(default=None, description="Author of the article.")
@@ -61,7 +68,6 @@ class PolygonCompanyNewsData(CompanyNewsData):
         default=None, description="Keywords in the article"
     )
     publisher: PolygonPublisher = Field(description="Publisher of the article.")
-    tickers: List[str] = Field(description="Tickers covered in the article.")
 
 
 class PolygonCompanyNewsFetcher(
@@ -70,7 +76,7 @@ class PolygonCompanyNewsFetcher(
         List[PolygonCompanyNewsData],
     ]
 ):
-    """Polygon Company News Fetcher."""
+    """Transform the query, extract and transform the data from the Polygon endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> PolygonCompanyNewsQueryParams:

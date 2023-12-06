@@ -1,18 +1,20 @@
-"""SEC Symbol Mapping Tool."""
-
+"""SEC Symbol Mapping Model."""
 
 from typing import Any, Dict, Optional
 
-from openbb_provider.abstract.data import Data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.cot_search import CotSearchQueryParams
-from openbb_provider.utils.descriptions import DATA_DESCRIPTIONS
+from openbb_core.provider.abstract.data import Data
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.cot_search import CotSearchQueryParams
+from openbb_core.provider.utils.descriptions import DATA_DESCRIPTIONS
 from openbb_sec.utils.helpers import cik_map
 from pydantic import Field
 
 
 class SecSymbolMapQueryParams(CotSearchQueryParams):
-    """SEC symbol map query.  This query assists by mapping the CIK number to a ticker symbol."""
+    """SEC Symbol Mapping Query.
+
+    Source: https://sec.gov/
+    """
 
 
 class SecSymbolMapData(Data):
@@ -27,7 +29,7 @@ class SecSymbolMapFetcher(
         SecSymbolMapData,
     ]
 ):
-    """Transform the query, extract and transform the data from the SEC."""
+    """Transform the query, extract and transform the data from the SEC endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> SecSymbolMapQueryParams:

@@ -1,15 +1,15 @@
-"""Polygon Market Snapshots fetcher."""
+"""Polygon Market Snapshots Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from openbb_polygon.utils.helpers import get_data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.market_snapshots import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.market_snapshots import (
     MarketSnapshotsData,
     MarketSnapshotsQueryParams,
 )
+from openbb_polygon.utils.helpers import get_data
 from pydantic import Field, field_validator
 
 
@@ -93,6 +93,8 @@ class PolygonMarketSnapshotsFetcher(
         List[PolygonMarketSnapshotsData],
     ]
 ):
+    """Transform the query, extract and transform the data from the Polygon endpoints."""
+
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> PolygonMarketSnapshotsQueryParams:
         """Transform the query params."""
@@ -119,7 +121,6 @@ class PolygonMarketSnapshotsFetcher(
         **kwargs: Any,
     ) -> List[PolygonMarketSnapshotsData]:
         """Return the transformed data."""
-
         processed_data = []
 
         # Process and flatten the response from a nested dictionary

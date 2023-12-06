@@ -1,19 +1,18 @@
-"""SEC Institutions Search"""
+"""SEC Institutions Search Model."""
 
 from typing import Any, Dict, List, Optional, Union
 
-from openbb_provider.abstract.data import Data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.cot_search import CotSearchQueryParams
+from openbb_core.provider.abstract.data import Data
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.cot_search import CotSearchQueryParams
 from openbb_sec.utils.helpers import get_all_ciks
 from pydantic import Field
 
 
 class SecInstitutionsSearchQueryParams(CotSearchQueryParams):
-    """
-    SEC Institutions query. This function assists with finding out the CIK number of a non-public company.
+    """SEC Institutions Search Query.
 
-    Fuzzy search can be applied to the name.
+    Source: https://sec.gov/
     """
 
     use_cache: bool = Field(
@@ -39,7 +38,7 @@ class SecInstitutionsSearchFetcher(
         List[SecInstitutionsSearchData],
     ]
 ):
-    """Transform the query, extract and transform the data from the SEC."""
+    """Transform the query, extract and transform the data from the SEC endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> SecInstitutionsSearchQueryParams:

@@ -1,4 +1,4 @@
-"""CBOE Index Snapshots fetcher."""
+"""CBOE Index Snapshots Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -11,24 +11,24 @@ from openbb_cboe.utils.helpers import (
     get_cboe_directory,
     get_cboe_index_directory,
 )
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.index_snapshots import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.index_snapshots import (
     IndexSnapshotsData,
     IndexSnapshotsQueryParams,
 )
-from openbb_provider.utils.helpers import make_request
+from openbb_core.provider.utils.helpers import make_request
 from pydantic import Field
 
 
 class CboeIndexSnapshotsQueryParams(IndexSnapshotsQueryParams):
-    """CBOE Index Snapshots query.  Returns quotes for all indices by region.
+    """CBOE Index Snapshots Query.
 
     Source: https://www.cboe.com/
     """
 
 
 class CboeIndexSnapshotsData(IndexSnapshotsData):
-    """CBOE Company Search Data."""
+    """CBOE Index Snapshots Data."""
 
     isin: Optional[str] = Field(
         default=None,
@@ -49,8 +49,7 @@ class CboeIndexSnapshotsFetcher(
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> CboeIndexSnapshotsQueryParams:
-        """Transform the query"""
-
+        """Transform the query."""
         return CboeIndexSnapshotsQueryParams(**params)
 
     @staticmethod
@@ -60,7 +59,6 @@ class CboeIndexSnapshotsFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Return the raw data from the CBOE endpoint"""
-
         data = pd.DataFrame()
 
         if query.region == "US":

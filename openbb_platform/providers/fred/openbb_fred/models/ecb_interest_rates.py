@@ -1,14 +1,13 @@
-"""European Central Bank Interest Rates Fetcher."""
-
+"""FRED European Central Bank Interest Rates Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fred.utils.fred_base import Fred
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.ecb_interest_rates import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.ecb_interest_rates import (
     EuropeanCentralBankInterestRatesData,
     EuropeanCentralBankInterestRatesParams,
 )
+from openbb_fred.utils.fred_base import Fred
 from pydantic import field_validator
 
 NAME_TO_ID_ECB = {"deposit": "ECBDFR", "lending": "ECBMLFR", "refinancing": "ECBMRRFR"}
@@ -17,11 +16,11 @@ NAME_TO_ID_ECB = {"deposit": "ECBDFR", "lending": "ECBMLFR", "refinancing": "ECB
 class FREDEuropeanCentralBankInterestRatesParams(
     EuropeanCentralBankInterestRatesParams
 ):
-    """EuropeanCentralBankInterestRatesParams Query."""
+    """FRED European Central Bank Interest Rates Query."""
 
 
 class FREDEuropeanCentralBankInterestRatesData(EuropeanCentralBankInterestRatesData):
-    """EuropeanCentralBankInterestRatesParams Data."""
+    """FRED European Central Bank Interest Rates Data."""
 
     __alias_dict__ = {"rate": "value"}
 
@@ -41,7 +40,7 @@ class FREDEuropeanCentralBankInterestRatesFetcher(
         List[FREDEuropeanCentralBankInterestRatesData],
     ]
 ):
-    """EuropeanCentralBankInterestRatesParams Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDEuropeanCentralBankInterestRatesData
 

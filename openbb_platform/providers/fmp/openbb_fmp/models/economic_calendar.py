@@ -1,15 +1,15 @@
-"""FMP Economics Earnings Calendar fetcher."""
+"""FMP Economic Calendar Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.economic_calendar import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.economic_calendar import (
     EconomicCalendarData,
     EconomicCalendarQueryParams,
 )
-from openbb_provider.utils.helpers import make_request
+from openbb_core.provider.utils.helpers import make_request
 from pydantic import Field, field_validator
 
 
@@ -86,7 +86,6 @@ class FMPEconomicCalendarFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Return the data from the FMP endpoint."""
-
         response = []
         api_key = credentials.get("fmp_api_key") if credentials else ""
 

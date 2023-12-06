@@ -1,20 +1,20 @@
-"""ECBEUYieldCurve Fetcher."""
+"""Euro Area Yield Curve Model."""
 
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
 
-from openbb_ecb.utils.ecb_helpers import get_series_data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.eu_yield_curve import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.eu_yield_curve import (
     EUYieldCurveData,
     EUYieldCurveQueryParams,
 )
+from openbb_ecb.utils.ecb_helpers import get_series_data
 from pydantic import Field, field_validator
 
 
 class ECBEUYieldCurveQueryParams(EUYieldCurveQueryParams):
-    """ECBEUYieldCurve Query."""
+    """Euro Area Yield Curve Query."""
 
     rating: Literal["A", "C"] = Field(
         default="A",
@@ -23,7 +23,7 @@ class ECBEUYieldCurveQueryParams(EUYieldCurveQueryParams):
 
 
 class ECBEUYieldCurveData(EUYieldCurveData):
-    """ECBEUYieldCurve Data."""
+    """Euro Area Yield Curve Data."""
 
     __alias_dict__ = {
         "rate": "OBS",
@@ -45,7 +45,7 @@ class ECBEUYieldCurveFetcher(
         List[ECBEUYieldCurveData],
     ]
 ):
-    """ECBEUYieldCurve Fetcher."""
+    """Transform the query, extract and transform the data from the ECB endpoints."""
 
     data_type = ECBEUYieldCurveData
 

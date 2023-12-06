@@ -1,10 +1,10 @@
-"""CBOE Company Search fetcher."""
+"""CBOE Equity Search Model."""
 
 from typing import Any, Dict, List, Optional
 
 from openbb_cboe.utils.helpers import get_cboe_directory
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_search import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_search import (
     EquitySearchData,
     EquitySearchQueryParams,
 )
@@ -12,14 +12,14 @@ from pydantic import Field
 
 
 class CboeEquitySearchQueryParams(EquitySearchQueryParams):
-    """CBOE Company Search query.
+    """CBOE Equity Search Query.
 
     Source: https://www.cboe.com/
     """
 
 
 class CboeEquitySearchData(EquitySearchData):
-    """CBOE Company Search Data."""
+    """CBOE Equity Search Data."""
 
     __alias_dict__ = {"name": "Company Name"}
 

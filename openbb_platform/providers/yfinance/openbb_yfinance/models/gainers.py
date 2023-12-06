@@ -1,11 +1,12 @@
-"""Yahoo Finance gainers fetcher."""
+"""Yahoo Finance Asset Performance Gainers Model."""
+
 import re
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import requests
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_performance import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_performance import (
     EquityPerformanceData,
     EquityPerformanceQueryParams,
 )
@@ -13,14 +14,14 @@ from pydantic import Field
 
 
 class YFGainersQueryParams(EquityPerformanceQueryParams):
-    """YF asset performance gainers QueryParams.
+    """Yahoo Finance Asset Performance Gainers Query.
 
     Source: https://finance.yahoo.com/screener/predefined/day_gainers
     """
 
 
 class YFGainersData(EquityPerformanceData):
-    """YF asset performance gainers Data."""
+    """Yahoo Finance Asset Performance Gainers Data."""
 
     __alias_dict__ = {
         "symbol": "Symbol",
@@ -47,7 +48,7 @@ class YFGainersData(EquityPerformanceData):
 
 
 class YFGainersFetcher(Fetcher[YFGainersQueryParams, List[YFGainersData]]):
-    """YF asset performance gainers Fetcher."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFGainersQueryParams:
@@ -71,7 +72,8 @@ class YFGainersFetcher(Fetcher[YFGainersQueryParams, List[YFGainersData]]):
         df = (
             pd.read_html(html_clean, header=None)[0]
             .dropna(how="all", axis=1)
-            .replace(float("NaN"), "")
+            .fillna("-")
+            .replace("-", None)
         )
         return df
 
@@ -82,12 +84,14 @@ class YFGainersFetcher(Fetcher[YFGainersQueryParams, List[YFGainersData]]):
         **kwargs: Any,
     ) -> List[YFGainersData]:
         """Transform data."""
-        data["% Change"] = data["% Change"].str.replace("%", "")
+        data["% Change"] = data["% Change"].str.replace("%", "").astype(float)
         data["Volume"] = data["Volume"].str.replace("M", "").astype(float) * 1000000
         data["Avg Vol (3 month)"] = (
             data["Avg Vol (3 month)"].str.replace("M", "").astype(float) * 1000000
         )
-        data = data.apply(pd.to_numeric, errors="ignore")
-        data = data.to_dict(orient="records")
-        data = sorted(data, key=lambda d: d["% Change"], reverse=query.sort == "desc")
-        return [YFGainersData.model_validate(d) for d in data]
+        return [
+            YFGainersData.model_validate(d)
+            for d in data.sort_values("% Change", ascending=False).to_dict(
+                orient="records"
+            )
+        ]

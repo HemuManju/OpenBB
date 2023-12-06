@@ -1,26 +1,26 @@
-"""Intrinio Currency available pairs fetcher."""
+"""Intrinio Currency Available Pairs Model."""
 
 
 from typing import Any, Dict, List, Optional
 
-from openbb_intrinio.utils.helpers import get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.currency_pairs import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.currency_pairs import (
     CurrencyPairsData,
     CurrencyPairsQueryParams,
 )
+from openbb_intrinio.utils.helpers import get_data_many
 from pydantic import Field
 
 
 class IntrinioCurrencyPairsQueryParams(CurrencyPairsQueryParams):
-    """Intrinio Currency available pairs Query.
+    """Intrinio Currency Available Pairs Query.
 
     Source: https://docs.intrinio.com/documentation/web_api/get_forex_pairs_v2
     """
 
 
 class IntrinioCurrencyPairsData(CurrencyPairsData):
-    """Intrinio Currency available pairs Data."""
+    """Intrinio Currency Available Pairs Data."""
 
     __alias_dict__ = {"name": "code"}
 

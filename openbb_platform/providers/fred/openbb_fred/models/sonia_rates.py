@@ -1,11 +1,10 @@
-"""FRED SONIA Fetcher."""
-
+"""FRED SONIA Model."""
 
 from typing import Any, Dict, List, Literal, Optional
 
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.sonia_rates import SONIAData, SONIAQueryParams
 from openbb_fred.utils.fred_base import Fred
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.sonia_rates import SONIAData, SONIAQueryParams
 from pydantic import Field, field_validator
 
 SONIA_PARAMETER_TO_FRED_ID = {
@@ -20,7 +19,7 @@ SONIA_PARAMETER_TO_FRED_ID = {
 
 
 class FREDSONIAQueryParams(SONIAQueryParams):
-    """SONIA query."""
+    """FRED SONIA Query."""
 
     parameter: Literal[
         "rate",
@@ -34,7 +33,7 @@ class FREDSONIAQueryParams(SONIAQueryParams):
 
 
 class FREDSONIAData(SONIAData):
-    """SONIA data."""
+    """FRED SONIA Data."""
 
     __alias_dict__ = {"rate": "value"}
 
@@ -51,7 +50,7 @@ class FREDSONIAData(SONIAData):
 class FREDSONIAFetcher(
     Fetcher[FREDSONIAQueryParams, List[Dict[str, List[FREDSONIAData]]]]
 ):
-    """FRED SONIA Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDSONIAData
 

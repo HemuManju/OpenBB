@@ -1,15 +1,14 @@
-"""FRED PROJECTION Fetcher."""
-
+"""FRED PROJECTION Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fred.utils.fred_base import Fred
-from openbb_fred.utils.fred_helpers import process_projections
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.fed_projections import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.fed_projections import (
     PROJECTIONData,
     PROJECTIONQueryParams,
 )
+from openbb_fred.utils.fred_base import Fred
+from openbb_fred.utils.fred_helpers import process_projections
 from pydantic import Field
 
 NAME_TO_ID_PROJECTION = {
@@ -24,7 +23,7 @@ NAME_TO_ID_PROJECTION = {
 
 
 class FREDPROJECTIONQueryParams(PROJECTIONQueryParams):
-    """PROJECTION query."""
+    """FRED PROJECTION Query."""
 
     long_run: bool = Field(
         default=False, description="Flag to show long run projections"
@@ -32,13 +31,13 @@ class FREDPROJECTIONQueryParams(PROJECTIONQueryParams):
 
 
 class FREDPROJECTIONData(PROJECTIONData):
-    """PROJECTION data."""
+    """FRED PROJECTION Data."""
 
 
 class FREDPROJECTIONFetcher(
     Fetcher[FREDPROJECTIONQueryParams, List[Dict[str, List[FREDPROJECTIONData]]]]
 ):
-    """FRED PROJECTION Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDPROJECTIONData
 

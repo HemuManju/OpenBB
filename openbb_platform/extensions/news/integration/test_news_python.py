@@ -20,7 +20,6 @@ def obb(pytestconfig):  # pylint: disable=inconsistent-return-statements
 @pytest.mark.parametrize(
     "params",
     [
-        ({"limit": 20}),
         (
             {
                 "display": "full",
@@ -81,22 +80,21 @@ def test_news_world(params, obb):
 @pytest.mark.parametrize(
     "params",
     [
-        ({"symbols": "AAPL,MSFT", "limit": 20}),
         (
             {
                 "display": "full",
-                "date": "2023-01-01",
+                "date": None,
                 "start_date": "2023-01-01",
                 "end_date": "2023-06-06",
-                "updated_since": 1,
-                "published_since": 1,
+                "updated_since": None,
+                "published_since": None,
                 "sort": "created",
                 "order": "desc",
-                "isin": "US0378331005",
-                "cusip": "037833100",
+                "isin": None,
+                "cusip": None,
                 "channels": "General",
-                "topics": "AAPL",
-                "authors": "Benzinga Insights",
+                "topics": "earnings",
+                "authors": None,
                 "content_types": "headline",
                 "provider": "benzinga",
                 "symbols": "AAPL,MSFT",
@@ -136,12 +134,6 @@ def test_news_world(params, obb):
         ),
         (
             {
-                "provider": "ultima",
-                "symbols": "AAPL,MSFT",
-            }
-        ),
-        (
-            {
                 "provider": "tiingo",
                 "symbols": "AAPL,MSFT",
                 "limit": 20,
@@ -155,6 +147,18 @@ def test_news_company(params, obb):
     params = {p: v for p, v in params.items() if v}
 
     result = obb.news.company(**params)
+    assert result
+    assert isinstance(result, OBBject)
+    assert len(result.results) > 0
+
+
+@pytest.mark.skip(reason="Not providers implement this yet.")
+@pytest.mark.parametrize("params", [])
+@pytest.mark.integration
+def test_news_sector(params, obb):
+    params = {p: v for p, v in params.items() if v}
+
+    result = obb.news.sector(**params)
     assert result
     assert isinstance(result, OBBject)
     assert len(result.results) > 0

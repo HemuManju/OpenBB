@@ -1,18 +1,18 @@
-"""FINRA OTC Aggregates fetcher."""
+"""FINRA OTC Aggregate Model."""
 
 from typing import Any, Dict, List, Literal, Optional
 
-from openbb_finra.utils.helpers import get_full_data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.otc_aggregate import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.otc_aggregate import (
     OTCAggregateData,
     OTCAggregateQueryParams,
 )
+from openbb_finra.utils.helpers import get_full_data
 from pydantic import Field
 
 
 class FinraOTCAggregateQueryParams(OTCAggregateQueryParams):
-    """FINRA OTC Aggregate Query Params."""
+    """FINRA OTC Aggregate Query."""
 
     tier: Literal["T1", "T2", "OTCE"] = Field(
         default="T1",
@@ -37,7 +37,7 @@ class FinraOTCAggregateData(OTCAggregateData):
 class FinraOTCAggregateFetcher(
     Fetcher[FinraOTCAggregateQueryParams, List[FinraOTCAggregateData]]
 ):
-    """FINRA OTC Aggregates Fetcher."""
+    """Transform the query, extract and transform the data from the FINRA endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> FinraOTCAggregateQueryParams:

@@ -1,4 +1,4 @@
-"""CBOE Equity Historical End of Day fetcher."""
+"""CBOE Equity Historical Price Model."""
 
 
 from datetime import datetime, timedelta
@@ -11,30 +11,29 @@ from openbb_cboe.utils.helpers import (
     get_cboe_index_directory,
     get_ticker_info,
 )
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_historical import (
     EquityHistoricalData,
     EquityHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_provider.utils.helpers import make_request
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.helpers import make_request
 from pydantic import Field
 
 
 class CboeEquityHistoricalQueryParams(EquityHistoricalQueryParams):
-    """CBOE Equity Historical End of Day query.
+    """CBOE Equity Historical Price Query.
 
     Source: https://www.cboe.com/
     """
 
-    interval: Optional[Literal["1m", "1d"]] = Field(
-        default="1d",
-        description=QUERY_DESCRIPTIONS.get("interval", ""),
+    interval: Literal["1m", "1d"] = Field(
+        default="1d", description=QUERY_DESCRIPTIONS.get("interval", "")
     )
 
 
 class CboeEquityHistoricalData(EquityHistoricalData):
-    """CBOE Equity Historical End of Day Data."""
+    """CBOE Equity Historical Price Data."""
 
     calls_volume: Optional[float] = Field(
         default=None,

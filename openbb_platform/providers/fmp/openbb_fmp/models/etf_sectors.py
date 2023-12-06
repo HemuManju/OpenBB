@@ -1,21 +1,21 @@
-"""FMP ETF Sector Weighting fetcher."""
+"""FMP ETF Sectors Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.etf_sectors import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.etf_sectors import (
     EtfSectorsData,
     EtfSectorsQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 
 
 class FMPEtfSectorsQueryParams(EtfSectorsQueryParams):
-    """FMP ETF Sector Weighting Params."""
+    """FMP ETF Sectors Query."""
 
 
 class FMPEtfSectorsData(EtfSectorsData):
-    """FMP ETF Sector Weighting Data."""
+    """FMP ETF Sectors Data."""
 
     __alias_dict__ = {"weight": "weightPercentage"}
 

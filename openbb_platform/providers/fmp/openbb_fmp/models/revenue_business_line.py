@@ -1,27 +1,26 @@
-"""FMP Revenue Business Line Fetcher."""
-
+"""FMP Revenue by Business Line Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.revenue_business_line import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.revenue_business_line import (
     RevenueBusinessLineData,
     RevenueBusinessLineQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data
 from pydantic import field_validator
 
 
 class FMPRevenueBusinessLineQueryParams(RevenueBusinessLineQueryParams):
-    """FMP Revenue Business Line Query.
+    """FMP Revenue by Business Line Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/sales-revenue-by-segments-api/
     """
 
 
 class FMPRevenueBusinessLineData(RevenueBusinessLineData):
-    """FMP Revenue Business Line Data."""
+    """FMP Revenue by Business Line Data."""
 
     @field_validator("date", mode="before", check_fields=False)
     @classmethod

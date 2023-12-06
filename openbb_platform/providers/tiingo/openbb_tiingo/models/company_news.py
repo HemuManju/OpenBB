@@ -1,21 +1,21 @@
-"""Tiingo Company News."""
+"""Tiingo Company News Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from dateutil import parser
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.company_news import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.company_news import (
     CompanyNewsData,
     CompanyNewsQueryParams,
 )
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
 from openbb_tiingo.utils.helpers import get_data_many
 from pydantic import Field, field_validator
 
 
 class TiingoCompanyNewsQueryParams(CompanyNewsQueryParams):
-    """tiingo Company News query.
+    """Tiingo Company News Query.
 
     Source: https://www.tiingo.com/documentation/news
     """
@@ -31,13 +31,11 @@ class TiingoCompanyNewsData(CompanyNewsData):
     """Tiingo Company News data."""
 
     __alias_dict__ = {
+        "symbols": "tickers",
         "date": "publishedDate",
         "text": "description",
     }
 
-    symbols: str = Field(
-        description="Ticker tagged in the fetched news.", alias="tickers"
-    )
     article_id: int = Field(description="Unique ID of the news article.", alias="id")
     site: str = Field(description="Name of the news source.", alias="source")
     tags: str = Field(description="Tags associated with the news article.")
@@ -68,7 +66,7 @@ class TiingoCompanyNewsFetcher(
         List[TiingoCompanyNewsData],
     ]
 ):
-    """Transform the query, extract and transform the data from the tiingo endpoints."""
+    """Transform the query, extract and transform the data from the Tiingo endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> TiingoCompanyNewsQueryParams:
@@ -77,7 +75,7 @@ class TiingoCompanyNewsFetcher(
 
     @staticmethod
     def extract_data(
-        query: TiingoCompanyNewsQueryParams,
+        query: TiingoCompanyNewsQueryParams,  # pylint: disable=unused-argument
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:

@@ -1,24 +1,23 @@
-"""Commercial Paper Fetcher."""
-
+"""FRED Commercial Paper Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fred.utils.fred_base import Fred
-from openbb_fred.utils.fred_helpers import get_cp_series_id
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.cp import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.cp import (
     CommercialPaperData,
     CommercialPaperParams,
 )
+from openbb_fred.utils.fred_base import Fred
+from openbb_fred.utils.fred_helpers import get_cp_series_id
 from pydantic import field_validator
 
 
 class FREDCommercialPaperParams(CommercialPaperParams):
-    """CommercialPaperParams Query."""
+    """FRED Commercial Paper Query."""
 
 
 class FREDCommercialPaperData(CommercialPaperData):
-    """CommercialPaperParams Data."""
+    """FRED Commercial Paper Data."""
 
     __alias_dict__ = {"rate": "value"}
 
@@ -38,7 +37,7 @@ class FREDCommercialPaperFetcher(
         List[FREDCommercialPaperData],
     ]
 ):
-    """CommercialPaperParams Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDCommercialPaperData
 

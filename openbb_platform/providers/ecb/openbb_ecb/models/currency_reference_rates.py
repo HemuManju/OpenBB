@@ -1,11 +1,11 @@
-"""ECB Reference Rates Models."""
+"""ECB Currency Reference Rates Model."""
 
 from typing import Any, Dict, Optional
 
 import requests
 import xmltodict
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.currency_reference_rates import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.currency_reference_rates import (
     CurrencyReferenceRatesData,
     CurrencyReferenceRatesQueryParams,
 )
@@ -13,7 +13,7 @@ from openbb_provider.standard_models.currency_reference_rates import (
 
 class ECBCurrencyReferenceRatesQueryParams(CurrencyReferenceRatesQueryParams):
     """
-    ECB Currency Reference Rates Query Params.
+    ECB Currency Reference Rates Query.
 
     source: https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/
     """
@@ -26,7 +26,7 @@ class ECBCurrencyReferenceRatesData(CurrencyReferenceRatesData):
 class ECBCurrencyReferenceRatesFetcher(
     Fetcher[ECBCurrencyReferenceRatesQueryParams, ECBCurrencyReferenceRatesData]
 ):
-    """ECB Currency Reference Rates Fetcher."""
+    """Transform the query, extract and transform the data from the ECB endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> ECBCurrencyReferenceRatesQueryParams:
@@ -40,7 +40,6 @@ class ECBCurrencyReferenceRatesFetcher(
         **kwargs: Any,
     ) -> Dict:
         """Extract the raw data from the ECB website."""
-
         results = {}
         url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
         response = requests.get(url, timeout=5)

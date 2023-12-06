@@ -1,5 +1,4 @@
-"""Polygon Equity Historical End of Day fetcher."""
-
+"""Polygon Equity Historical Price Model."""
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -7,13 +6,13 @@ from itertools import repeat
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_polygon.utils.helpers import get_data
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_historical import (
     EquityHistoricalData,
     EquityHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_polygon.utils.helpers import get_data
 from pydantic import (
     Field,
     PositiveInt,
@@ -23,7 +22,7 @@ from pydantic import (
 
 
 class PolygonEquityHistoricalQueryParams(EquityHistoricalQueryParams):
-    """Polygon Equity Historical End of Day Query.
+    """Polygon Equity Historical Price Query.
 
     Source: https://polygon.io/docs/stocks/getting-started
     """
@@ -67,7 +66,7 @@ class PolygonEquityHistoricalQueryParams(EquityHistoricalQueryParams):
 
 
 class PolygonEquityHistoricalData(EquityHistoricalData):
-    """Polygon Equity Historical End of Day Data."""
+    """Polygon Equity Historical Price Data."""
 
     __alias_dict__ = {
         "date": "t",
@@ -92,7 +91,7 @@ class PolygonEquityHistoricalFetcher(
         List[PolygonEquityHistoricalData],
     ]
 ):
-    """Equity Equity Historical End of Day Fetcher."""
+    """Transform the query, extract and transform the data from the Polygon endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> PolygonEquityHistoricalQueryParams:
@@ -117,6 +116,10 @@ class PolygonEquityHistoricalFetcher(
         api_key = credentials.get("polygon_api_key") if credentials else ""
 
         data: List = []
+
+        # if there are more than 20 symbols, we need to increase the timeout
+        if len(query.symbol.split(",")) > 20:
+            kwargs.update({"preferences": {"request_timeout": 30}})
 
         def multiple_symbols(
             symbol: str, data: List[PolygonEquityHistoricalData]

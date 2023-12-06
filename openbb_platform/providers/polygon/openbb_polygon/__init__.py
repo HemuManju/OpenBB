@@ -1,4 +1,5 @@
 """Polygon provider module."""
+from openbb_core.provider.abstract.provider import Provider
 from openbb_polygon.models.balance_sheet import PolygonBalanceSheetFetcher
 from openbb_polygon.models.cash_flow import PolygonCashFlowStatementFetcher
 from openbb_polygon.models.company_news import PolygonCompanyNewsFetcher
@@ -12,7 +13,6 @@ from openbb_polygon.models.market_indices import (
     PolygonMarketIndicesFetcher,
 )
 from openbb_polygon.models.market_snapshots import PolygonMarketSnapshotsFetcher
-from openbb_provider.abstract.provider import Provider
 
 polygon_provider = Provider(
     name="polygon",
@@ -20,7 +20,7 @@ polygon_provider = Provider(
     description="""The Polygon.io Stocks API provides REST endpoints that let you query
      the latest market data from all US stock exchanges. You can also find data on
      company financials, stock market holidays, corporate actions, and more.""",
-    required_credentials=["api_key"],
+    credentials=["api_key"],
     fetcher_dict={
         "BalanceSheet": PolygonBalanceSheetFetcher,
         "CashFlowStatement": PolygonCashFlowStatementFetcher,

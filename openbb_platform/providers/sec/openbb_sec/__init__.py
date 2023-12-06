@@ -1,5 +1,5 @@
 """SEC provider module."""
-from openbb_provider.abstract.provider import Provider
+from openbb_core.provider.abstract.provider import Provider
 from openbb_sec.models.cik_map import SecCikMapFetcher
 from openbb_sec.models.company_filings import SecCompanyFilingsFetcher
 from openbb_sec.models.equity_ftd import SecEquityFtdFetcher
@@ -14,7 +14,7 @@ sec_provider = Provider(
     name="sec",
     website="https://sec.gov",
     description="SEC is the public listings regulatory body for the United States.",
-    required_credentials=None,
+    credentials=None,
     fetcher_dict={
         "CikMap": SecCikMapFetcher,
         "CompanyFilings": SecCompanyFilingsFetcher,

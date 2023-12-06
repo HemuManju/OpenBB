@@ -1,11 +1,12 @@
-"""Yahoo Finance active fetcher."""
+"""Yahoo Finance Asset Performance Active Model."""
+
 import re
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import requests
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_performance import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_performance import (
     EquityPerformanceData,
     EquityPerformanceQueryParams,
 )
@@ -13,14 +14,14 @@ from pydantic import Field
 
 
 class YFActiveQueryParams(EquityPerformanceQueryParams):
-    """YF asset performance active QueryParams.
+    """Yahoo Finance Asset Performance Active Query.
 
     Source: https://finance.yahoo.com/screener/predefined/most_actives
     """
 
 
 class YFActiveData(EquityPerformanceData):
-    """YF asset performance active Data."""
+    """Yahoo Finance Asset Performance Active Data."""
 
     __alias_dict__ = {
         "symbol": "Symbol",
@@ -47,7 +48,7 @@ class YFActiveData(EquityPerformanceData):
 
 
 class YFActiveFetcher(Fetcher[YFActiveQueryParams, List[YFActiveData]]):
-    """YF asset performance active Fetcher."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFActiveQueryParams:
@@ -71,7 +72,8 @@ class YFActiveFetcher(Fetcher[YFActiveQueryParams, List[YFActiveData]]):
         df = (
             pd.read_html(html_clean, header=None)[0]
             .dropna(how="all", axis=1)
-            .replace(float("NaN"), "")
+            .fillna("-")
+            .replace("-", None)
         )
         return df
 
@@ -87,7 +89,6 @@ class YFActiveFetcher(Fetcher[YFActiveQueryParams, List[YFActiveData]]):
         data["Avg Vol (3 month)"] = (
             data["Avg Vol (3 month)"].str.replace("M", "").astype(float) * 1000000
         )
-        data = data.apply(pd.to_numeric, errors="ignore")
         data = data.to_dict(orient="records")
         data = sorted(data, key=lambda d: d["Volume"], reverse=query.sort == "desc")
         return [YFActiveData.model_validate(d) for d in data]

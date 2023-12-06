@@ -1,4 +1,4 @@
-"""Nasdaq CFTC Commitment of Traders Reports fetcher."""
+"""Nasdaq CFTC Commitment of Traders Reports Model."""
 
 from datetime import (
     date as dateType,
@@ -8,10 +8,10 @@ from typing import Any, Dict, List, Literal, Optional
 
 import nasdaqdatalink
 import pandas as pd
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.cot import COTData, COTQueryParams
+from openbb_core.provider.utils.helpers import to_snake_case
 from openbb_nasdaq.utils.series_ids import CFTC
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.cot import COTData, COTQueryParams
-from openbb_provider.utils.helpers import to_snake_case
 from pydantic import Field, field_validator
 
 
@@ -90,7 +90,7 @@ class NasdaqCotQueryParams(COTQueryParams):
 
 
 class NasdaqCotData(COTData):
-    """Nasdaq CFTC Commitment of Traders Reports data."""
+    """Nasdaq CFTC Commitment of Traders Reports Data."""
 
     @field_validator("date", mode="before", check_fields=False)
     def date_validate(cls, v):  # pylint: disable=E0213
@@ -100,7 +100,7 @@ class NasdaqCotData(COTData):
 
 
 class NasdaqCotFetcher(Fetcher[NasdaqCotQueryParams, List[NasdaqCotData]]):
-    """Nasdaq CFTC Commitment of Traders Reports Fetcher."""
+    """Transform the query, extract and transform the data from the Nasdaq endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> NasdaqCotQueryParams:

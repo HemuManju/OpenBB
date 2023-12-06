@@ -1,9 +1,9 @@
-"""Tiingo Trailing Dividend Yield fetcher."""
+"""Tiingo Trailing Dividend Yield Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.trailing_dividend_yield import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.trailing_dividend_yield import (
     TrailingDivYieldData,
     TrailingDivYieldQueryParams,
 )

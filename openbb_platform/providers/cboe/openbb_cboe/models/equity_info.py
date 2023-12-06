@@ -1,4 +1,4 @@
-"""CBOE Equity Info fetcher."""
+"""CBOE Equity Info Model."""
 
 import concurrent.futures
 from datetime import datetime
@@ -11,8 +11,8 @@ from openbb_cboe.utils.helpers import (
     get_ticker_info,
     get_ticker_iv,
 )
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_info import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_info import (
     EquityInfoData,
     EquityInfoQueryParams,
 )
@@ -20,14 +20,14 @@ from pydantic import Field
 
 
 class CboeEquityInfoQueryParams(EquityInfoQueryParams):
-    """CBOE Company Search query.
+    """CBOE Equity Info Query.
 
     Source: https://www.cboe.com/
     """
 
 
 class CboeEquityInfoData(EquityInfoData):
-    """CBOE Company Search Data."""
+    """CBOE Equity Info Data."""
 
     type: Optional[str] = Field(default=None, description="Type of asset.")
     exchange_id: Optional[int] = Field(

@@ -1,4 +1,4 @@
-"""Nasdaq IPO Calendar fetcher."""
+"""Nasdaq IPO Calendar Model."""
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import (
@@ -9,12 +9,12 @@ from datetime import (
 from typing import Any, Dict, List, Literal, Optional
 
 import requests
-from openbb_nasdaq.utils.helpers import IPO_HEADERS, date_range
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.calendar_ipo import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.calendar_ipo import (
     CalendarIpoData,
     CalendarIpoQueryParams,
 )
+from openbb_nasdaq.utils.helpers import IPO_HEADERS, date_range
 from pydantic import Field, field_validator
 
 
@@ -115,6 +115,8 @@ class NasdaqCalendarIpoFetcher(
     ]
 ):
     """Transform the query, extract and transform the data from the Nasdaq endpoints."""
+
+    require_credentials = False
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> NasdaqCalendarIpoQueryParams:

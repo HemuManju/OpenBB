@@ -1,21 +1,21 @@
-"""Tiingo Crypto end of day fetcher."""
+"""Tiingo Crypto Historical Price Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.crypto_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.crypto_historical import (
     CryptoHistoricalData,
     CryptoHistoricalQueryParams,
 )
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
 from openbb_tiingo.utils.helpers import get_data_one
 from pydantic import Field
 
 
 class TiingoCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
-    """Tiingo Crypto end of day Query.
+    """Tiingo Crypto Historical Price Query.
 
     Source: https://www.tiingo.com/documentation/end-of-day
     """
@@ -40,7 +40,7 @@ class TiingoCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
 
 
 class TiingoCryptoHistoricalData(CryptoHistoricalData):
-    """Tiingo Crypto end of day Data."""
+    """Tiingo Crypto Historical Price Data."""
 
     transactions: Optional[int] = Field(
         default=None, description="Number of trades.", alias="tradesDone"

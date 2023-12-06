@@ -1,14 +1,13 @@
 ### THIS FILE IS AUTO-GENERATED. DO NOT EDIT. ###
 
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
-from annotated_types import Ge
 from openbb_core.app.model.custom_parameter import OpenBBCustomParameter
 from openbb_core.app.model.obbject import OBBject
 from openbb_core.app.static.container import Container
 from openbb_core.app.static.decorators import validate
 from openbb_core.app.static.filters import filter_inputs
-from openbb_provider.abstract.data import Data
+from openbb_core.provider.abstract.data import Data
 from typing_extensions import Annotated
 
 
@@ -20,10 +19,10 @@ class ROUTER_equity(Container):
     /estimates
     /fundamental
     market_snapshots
-    news
-    /options
     /ownership
     /price
+    profile
+    screener
     search
     /shorts
     """
@@ -200,152 +199,6 @@ class ROUTER_equity(Container):
             **inputs,
         )
 
-    @validate
-    def news(
-        self,
-        symbols: Annotated[
-            str,
-            OpenBBCustomParameter(
-                description=" Here it is a separated list of symbols."
-            ),
-        ],
-        limit: Annotated[
-            Optional[Annotated[int, Ge(ge=0)]],
-            OpenBBCustomParameter(description="The number of data entries to return."),
-        ] = 20,
-        provider: Optional[Literal["benzinga", "fmp", "intrinio", "polygon"]] = None,
-        **kwargs
-    ) -> OBBject[List[Data]]:
-        """Company News. Get news for one or more companies.
-
-        Parameters
-        ----------
-        symbols : str
-             Here it is a separated list of symbols.
-        limit : Optional[Annotated[int, Ge(ge=0)]]
-            The number of data entries to return.
-        provider : Optional[Literal['benzinga', 'fmp', 'intrinio', 'polygon']]
-            The provider to use for the query, by default None.
-            If None, the provider specified in defaults is selected or 'benzinga' if there is
-            no default.
-        display : Literal['headline', 'abstract', 'full']
-            Specify headline only (headline), headline + teaser (abstract), or headline + full body (full). (provider: benzinga)
-        date : Optional[str]
-            Date of the news to retrieve. (provider: benzinga)
-        start_date : Optional[str]
-            Start date of the news to retrieve. (provider: benzinga)
-        end_date : Optional[str]
-            End date of the news to retrieve. (provider: benzinga)
-        updated_since : Optional[int]
-            Number of seconds since the news was updated. (provider: benzinga)
-        published_since : Optional[int]
-            Number of seconds since the news was published. (provider: benzinga)
-        sort : Optional[Literal['id', 'created', 'updated']]
-            Key to sort the news by. (provider: benzinga)
-        order : Optional[Literal['asc', 'desc']]
-            Order to sort the news by. (provider: benzinga); Sort order of the articles. (provider: polygon)
-        isin : Optional[str]
-            The ISIN of the news to retrieve. (provider: benzinga)
-        cusip : Optional[str]
-            The CUSIP of the news to retrieve. (provider: benzinga)
-        channels : Optional[str]
-            Channels of the news to retrieve. (provider: benzinga)
-        topics : Optional[str]
-            Topics of the news to retrieve. (provider: benzinga)
-        authors : Optional[str]
-            Authors of the news to retrieve. (provider: benzinga)
-        content_types : Optional[str]
-            Content types of the news to retrieve. (provider: benzinga)
-        page : Optional[int]
-            Page number of the results. Use in combination with limit. (provider: fmp)
-        published_utc : Optional[str]
-            Date query to fetch articles. Supports operators <, <=, >, >= (provider: polygon)
-
-        Returns
-        -------
-        OBBject
-            results : List[CompanyNews]
-                Serializable results.
-            provider : Optional[Literal['benzinga', 'fmp', 'intrinio', 'polygon']]
-                Provider name.
-            warnings : Optional[List[Warning_]]
-                List of warnings.
-            chart : Optional[Chart]
-                Chart object.
-            extra: Dict[str, Any]
-                Extra info.
-
-        CompanyNews
-        -----------
-        date : datetime
-            The date of the data. Here it is the date of the news.
-        title : str
-            Title of the news.
-        image : Optional[str]
-            Image URL of the news.
-        text : Optional[str]
-            Text/body of the news.
-        url : str
-            URL of the news.
-        id : Optional[str]
-            ID of the news. (provider: benzinga); Intrinio ID for the article. (provider: intrinio); Article ID. (provider: polygon)
-        author : Optional[str]
-            Author of the news. (provider: benzinga); Author of the article. (provider: polygon)
-        teaser : Optional[str]
-            Teaser of the news. (provider: benzinga)
-        images : Optional[Union[List[Dict[str, str]], List[str], str]]
-            Images associated with the news. (provider: benzinga); URL to the images of the news. (provider: fmp)
-        channels : Optional[str]
-            Channels associated with the news. (provider: benzinga)
-        stocks : Optional[str]
-            Stocks associated with the news. (provider: benzinga)
-        tags : Optional[str]
-            Tags associated with the news. (provider: benzinga)
-        updated : Optional[datetime]
-            Updated date of the news. (provider: benzinga)
-        symbol : Optional[str]
-            Ticker of the fetched news. (provider: fmp)
-        site : Optional[str]
-            Name of the news source. (provider: fmp)
-        amp_url : Optional[str]
-            AMP URL. (provider: polygon)
-        image_url : Optional[str]
-            Image URL. (provider: polygon)
-        keywords : Optional[List[str]]
-            Keywords in the article (provider: polygon)
-        publisher : Optional[openbb_polygon.models.company_news.PolygonPublisher]
-            Publisher of the article. (provider: polygon)
-        tickers : Optional[List[str]]
-            Tickers covered in the article. (provider: polygon)
-
-        Example
-        -------
-        >>> from openbb import obb
-        >>> obb.equity.news(symbols="AAPL,MSFT", limit=20)
-        """  # noqa: E501
-
-        inputs = filter_inputs(
-            provider_choices={
-                "provider": provider,
-            },
-            standard_params={
-                "symbols": symbols,
-                "limit": limit,
-            },
-            extra_params=kwargs,
-        )
-
-        return self._run(
-            "/equity/news",
-            **inputs,
-        )
-
-    @property
-    def options(self):  # route = "/equity/options"
-        from . import equity_options
-
-        return equity_options.ROUTER_equity_options(command_runner=self._command_runner)
-
     @property
     def ownership(self):  # route = "/equity/ownership"
         from . import equity_ownership
@@ -361,25 +214,149 @@ class ROUTER_equity(Container):
         return equity_price.ROUTER_equity_price(command_runner=self._command_runner)
 
     @validate
-    def search(
+    def profile(
         self,
-        query: Annotated[str, OpenBBCustomParameter(description="Search query.")] = "",
-        is_symbol: Annotated[
-            bool,
-            OpenBBCustomParameter(description="Whether to search by ticker symbol."),
-        ] = False,
-        provider: Optional[Literal["fmp", "sec"]] = None,
+        symbol: Annotated[
+            Union[str, List[str]],
+            OpenBBCustomParameter(description="Symbol to get data for."),
+        ],
+        provider: Optional[Literal["intrinio"]] = None,
         **kwargs
-    ) -> OBBject[List[Data]]:
-        """Equity Search. Search for a company or stock ticker.
+    ) -> OBBject[Data]:
+        """Equity Info. Get general price and performance metrics of a stock.
 
         Parameters
         ----------
-        query : str
-            Search query.
-        is_symbol : bool
-            Whether to search by ticker symbol.
-        provider : Optional[Literal['fmp', 'sec']]
+        symbol : str
+            Symbol to get data for.
+        provider : Optional[Literal['intrinio']]
+            The provider to use for the query, by default None.
+            If None, the provider specified in defaults is selected or 'intrinio' if there is
+            no default.
+
+        Returns
+        -------
+        OBBject
+            results : EquityInfo
+                Serializable results.
+            provider : Optional[Literal['intrinio']]
+                Provider name.
+            warnings : Optional[List[Warning_]]
+                List of warnings.
+            chart : Optional[Chart]
+                Chart object.
+            extra: Dict[str, Any]
+                Extra info.
+
+        EquityInfo
+        ----------
+        symbol : str
+            Symbol representing the entity requested in the data.
+        name : Optional[str]
+            Common name of the company.
+        cik : Optional[str]
+            Central Index Key (CIK) for the requested entity.
+        lei : Optional[str]
+            Legal Entity Identifier assigned to the company.
+        legal_name : Optional[str]
+            Official legal name of the company.
+        stock_exchange : Optional[str]
+            Stock exchange where the company is traded.
+        sic : Optional[int]
+            Standard Industrial Classification code for the company.
+        short_description : Optional[str]
+            Short description of the company.
+        long_description : Optional[str]
+            Long description of the company.
+        ceo : Optional[str]
+            Chief Executive Officer of the company.
+        company_url : Optional[str]
+            URL of the company's website.
+        business_address : Optional[str]
+            Address of the company's headquarters.
+        mailing_address : Optional[str]
+            Mailing address of the company.
+        business_phone_no : Optional[str]
+            Phone number of the company's headquarters.
+        hq_address1 : Optional[str]
+            Address of the company's headquarters.
+        hq_address2 : Optional[str]
+            Address of the company's headquarters.
+        hq_address_city : Optional[str]
+            City of the company's headquarters.
+        hq_address_postal_code : Optional[str]
+            Zip code of the company's headquarters.
+        hq_state : Optional[str]
+            State of the company's headquarters.
+        hq_country : Optional[str]
+            Country of the company's headquarters.
+        inc_state : Optional[str]
+            State in which the company is incorporated.
+        inc_country : Optional[str]
+            Country in which the company is incorporated.
+        employees : Optional[int]
+            Number of employees working for the company.
+        entity_legal_form : Optional[str]
+            Legal form of the company.
+        entity_status : Optional[str]
+            Status of the company.
+        latest_filing_date : Optional[date]
+            Date of the company's latest filing.
+        irs_number : Optional[str]
+            IRS number assigned to the company.
+        sector : Optional[str]
+            Sector in which the company operates.
+        industry_category : Optional[str]
+            Category of industry in which the company operates.
+        industry_group : Optional[str]
+            Group of industry in which the company operates.
+        template : Optional[str]
+            Template used to standardize the company's financial statements.
+        standardized_active : Optional[bool]
+            Whether the company is active or not.
+        first_fundamental_date : Optional[date]
+            Date of the company's first fundamental.
+        last_fundamental_date : Optional[date]
+            Date of the company's last fundamental.
+        first_stock_price_date : Optional[date]
+            Date of the company's first stock price.
+        last_stock_price_date : Optional[date]
+            Date of the company's last stock price.
+        id : Optional[str]
+            Intrinio ID for the company. (provider: intrinio)
+        thea_enabled : Optional[bool]
+            Whether the company has been enabled for Thea. (provider: intrinio)
+
+        Example
+        -------
+        >>> from openbb import obb
+        >>> obb.equity.profile(symbol="AAPL")
+        """  # noqa: E501
+
+        inputs = filter_inputs(
+            provider_choices={
+                "provider": provider,
+            },
+            standard_params={
+                "symbol": ",".join(symbol) if isinstance(symbol, list) else symbol,
+            },
+            extra_params=kwargs,
+        )
+
+        return self._run(
+            "/equity/profile",
+            **inputs,
+        )
+
+    @validate
+    def screener(
+        self, provider: Optional[Literal["fmp"]] = None, **kwargs
+    ) -> OBBject[List[Data]]:
+        """Equity Screen. Screen for companies meeting various criteria.
+
+        Parameters
+        ----------
+        provider : Optional[Literal['fmp']]
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'fmp' if there is
             no default.
@@ -417,17 +394,13 @@ class ROUTER_equity(Container):
             Filter by exchange. (provider: fmp)
         limit : Optional[int]
             Limit the number of results to return. (provider: fmp)
-        is_fund : bool
-            Whether to direct the search to the list of mutual funds and ETFs. (provider: sec)
-        use_cache : bool
-            Whether to use the cache or not. Company names, tickers, and CIKs are cached for seven days. (provider: sec)
 
         Returns
         -------
         OBBject
-            results : List[EquitySearch]
+            results : List[EquityScreener]
                 Serializable results.
-            provider : Optional[Literal['fmp', 'sec']]
+            provider : Optional[Literal['fmp']]
                 Provider name.
             warnings : Optional[List[Warning_]]
                 List of warnings.
@@ -436,8 +409,8 @@ class ROUTER_equity(Container):
             extra: Dict[str, Any]
                 Extra info.
 
-        EquitySearch
-        ------------
+        EquityScreener
+        --------------
         symbol : str
             Symbol representing the entity requested in the data.
         name : str
@@ -466,6 +439,74 @@ class ROUTER_equity(Container):
             Whether the ticker is an ETF. (provider: fmp)
         actively_trading : Optional[Literal[True, False]]
             Whether the ETF is actively trading. (provider: fmp)
+
+        Example
+        -------
+        >>> from openbb import obb
+        >>> obb.equity.screener()
+        """  # noqa: E501
+
+        inputs = filter_inputs(
+            provider_choices={
+                "provider": provider,
+            },
+            standard_params={},
+            extra_params=kwargs,
+        )
+
+        return self._run(
+            "/equity/screener",
+            **inputs,
+        )
+
+    @validate
+    def search(
+        self,
+        query: Annotated[str, OpenBBCustomParameter(description="Search query.")] = "",
+        is_symbol: Annotated[
+            bool,
+            OpenBBCustomParameter(description="Whether to search by ticker symbol."),
+        ] = False,
+        provider: Optional[Literal["sec"]] = None,
+        **kwargs
+    ) -> OBBject[List[Data]]:
+        """Equity Search. Search for a company or stock ticker.
+
+        Parameters
+        ----------
+        query : str
+            Search query.
+        is_symbol : bool
+            Whether to search by ticker symbol.
+        provider : Optional[Literal['sec']]
+            The provider to use for the query, by default None.
+            If None, the provider specified in defaults is selected or 'sec' if there is
+            no default.
+        is_fund : bool
+            Whether to direct the search to the list of mutual funds and ETFs. (provider: sec)
+        use_cache : bool
+            Whether to use the cache or not. Company names, tickers, and CIKs are cached for seven days. (provider: sec)
+
+        Returns
+        -------
+        OBBject
+            results : List[EquitySearch]
+                Serializable results.
+            provider : Optional[Literal['sec']]
+                Provider name.
+            warnings : Optional[List[Warning_]]
+                List of warnings.
+            chart : Optional[Chart]
+                Chart object.
+            extra: Dict[str, Any]
+                Extra info.
+
+        EquitySearch
+        ------------
+        symbol : str
+            Symbol representing the entity requested in the data.
+        name : str
+            Name of the company.
         cik : Optional[str]
             Central Index Key (provider: sec)
 

@@ -1,20 +1,20 @@
-"""FMP Balance Sheet Growth Fetcher."""
+"""FMP Balance Sheet Growth Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.balance_sheet_growth import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.balance_sheet_growth import (
     BalanceSheetGrowthData,
     BalanceSheetGrowthQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 from pydantic import field_validator
 
 
 class FMPBalanceSheetGrowthQueryParams(BalanceSheetGrowthQueryParams):
-    """FMP Balance Sheet Growth QueryParams.
+    """FMP Balance Sheet Growth Query.
 
     Source:  https://site.financialmodelingprep.com/developer/docs/#Financial-Statements-Growth
     """

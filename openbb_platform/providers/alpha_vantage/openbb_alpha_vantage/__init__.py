@@ -1,6 +1,6 @@
 """Alpha Vantage Provider module."""
 from openbb_alpha_vantage.models.equity_historical import AVEquityHistoricalFetcher
-from openbb_provider.abstract.provider import Provider
+from openbb_core.provider.abstract.provider import Provider
 
 alpha_vantage_provider = Provider(
     name="alpha_vantage",
@@ -12,7 +12,7 @@ alpha_vantage_provider = Provider(
     from fundamental data to technical indicators, Alpha Vantage
     is your one-stop-shop for enterprise-grade global market data delivered through
     cloud-based APIs, Excel, and Google Sheets. """,
-    required_credentials=["api_key"],
+    credentials=["api_key"],
     fetcher_dict={
         "EquityHistorical": AVEquityHistoricalFetcher,
     },

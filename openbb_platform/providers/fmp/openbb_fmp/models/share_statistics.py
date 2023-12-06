@@ -1,5 +1,4 @@
-"""FMP Share Statistics Fetcher."""
-
+"""FMP Share Statistics Model."""
 
 from datetime import (
     date as dateType,
@@ -7,17 +6,17 @@ from datetime import (
 )
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.share_statistics import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.share_statistics import (
     ShareStatisticsData,
     ShareStatisticsQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 from pydantic import field_validator
 
 
 class FMPShareStatisticsQueryParams(ShareStatisticsQueryParams):
-    """FMP Income Statement QueryParams.
+    """FMP Share Statistics Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/shares-float-api/
     """

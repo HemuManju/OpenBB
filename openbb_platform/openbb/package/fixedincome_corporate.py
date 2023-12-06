@@ -8,7 +8,7 @@ from openbb_core.app.model.obbject import OBBject
 from openbb_core.app.static.container import Container
 from openbb_core.app.static.decorators import validate
 from openbb_core.app.static.filters import filter_inputs
-from openbb_provider.abstract.data import Data
+from openbb_core.provider.abstract.data import Data
 from typing_extensions import Annotated
 
 
@@ -129,12 +129,12 @@ class ROUTER_fixedincome_corporate(Container):
         self,
         date: Annotated[
             Optional[datetime.date],
-            OpenBBCustomParameter(description="The date of the data."),
+            OpenBBCustomParameter(description="A specific date to get data for."),
         ] = None,
         yield_curve: Annotated[
-            List[Literal["spot", "par"]],
+            Literal["spot", "par"],
             OpenBBCustomParameter(description="The yield curve type."),
-        ] = ["spot"],
+        ] = "spot",
         provider: Optional[Literal["fred"]] = None,
         **kwargs
     ) -> OBBject[List[Data]]:
@@ -149,8 +149,8 @@ class ROUTER_fixedincome_corporate(Container):
         Parameters
         ----------
         date : Optional[datetime.date]
-            The date of the data.
-        yield_curve : List[Literal['spot', 'par']]
+            A specific date to get data for.
+        yield_curve : Literal['spot', 'par']
             The yield curve type.
         provider : Optional[Literal['fred']]
             The provider to use for the query, by default None.
@@ -185,7 +185,7 @@ class ROUTER_fixedincome_corporate(Container):
         Example
         -------
         >>> from openbb import obb
-        >>> obb.fixedincome.corporate.hqm(yield_curve=['spot'])
+        >>> obb.fixedincome.corporate.hqm(yield_curve="spot")
         """  # noqa: E501
 
         inputs = filter_inputs(

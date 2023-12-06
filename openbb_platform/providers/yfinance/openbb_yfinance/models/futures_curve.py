@@ -1,24 +1,27 @@
-"""yfinance Futures End of Day fetcher."""
+"""Yahoo Finance Futures Curve Model."""
 # ruff: noqa: SIM105
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.futures_curve import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.futures_curve import (
     FuturesCurveData,
     FuturesCurveQueryParams,
 )
-from openbb_provider.utils.errors import EmptyDataError
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_yfinance.utils.helpers import get_futures_curve
 
 
 class YFinanceFuturesCurveQueryParams(FuturesCurveQueryParams):
-    """YFinance Futures Curve Query."""
+    """Yahoo Finance Futures Curve Query.
+
+    Source: https://finance.yahoo.com/crypto/
+    """
 
 
 class YFinanceFuturesCurveData(FuturesCurveData):
-    """YFinance Futures End of Day Data."""
+    """Yahoo Finance Futures Curve Data."""
 
     __alias_dict__ = {"price": "Last Price"}
 
@@ -29,7 +32,7 @@ class YFinanceFuturesCurveFetcher(
         List[YFinanceFuturesCurveData],
     ]
 ):
-    """Transform the query, extract and transform the data from the yfinance endpoints."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFinanceFuturesCurveQueryParams:
@@ -44,11 +47,11 @@ class YFinanceFuturesCurveFetcher(
 
     @staticmethod
     def extract_data(
-        query: YFinanceFuturesCurveQueryParams,
+        query: YFinanceFuturesCurveQueryParams,  # pylint: disable=unused-argument
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[dict]:
-        """Return the raw data from the yfinance endpoint."""
+        """Return the raw data from the Yahoo Finance endpoint."""
         data = get_futures_curve(query.symbol, query.date).to_dict(orient="records")
 
         if not data:
@@ -58,7 +61,7 @@ class YFinanceFuturesCurveFetcher(
 
     @staticmethod
     def transform_data(
-        query: YFinanceFuturesCurveQueryParams,
+        query: YFinanceFuturesCurveQueryParams,  # pylint: disable=unused-argument
         data: dict,
         **kwargs: Any,
     ) -> List[YFinanceFuturesCurveData]:

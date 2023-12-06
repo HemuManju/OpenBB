@@ -1,22 +1,21 @@
-"""FMP Market Indices end of day fetcher."""
-
+"""FMP Market Indices Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_fmp.utils.helpers import get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.market_indices import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.market_indices import (
     MarketIndicesData,
     MarketIndicesQueryParams,
 )
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.helpers import get_querystring
+from openbb_fmp.utils.helpers import get_data_many
 from pydantic import Field, NonNegativeInt
 
 
 class FMPMarketIndicesQueryParams(MarketIndicesQueryParams):
-    """FMP Market Indices end of day Query.
+    """FMP Market Indices Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/historical-index-price-api/
     """
@@ -32,7 +31,7 @@ class FMPMarketIndicesQueryParams(MarketIndicesQueryParams):
 
 
 class FMPMarketIndicesData(MarketIndicesData):
-    """FMP Market Indices end of day Data."""
+    """FMP Market Indices Data."""
 
     adj_close: Optional[float] = Field(
         description="Adjusted Close Price of the symbol.",

@@ -8,7 +8,7 @@ from openbb_core.app.model.obbject import OBBject
 from openbb_core.app.static.container import Container
 from openbb_core.app.static.decorators import validate
 from openbb_core.app.static.filters import filter_inputs
-from openbb_provider.abstract.data import Data
+from openbb_core.provider.abstract.data import Data
 from typing_extensions import Annotated
 
 
@@ -46,7 +46,7 @@ class ROUTER_equity_price(Container):
                 description="End date of the data, in YYYY-MM-DD format."
             ),
         ] = None,
-        provider: Optional[Literal["fmp", "intrinio", "polygon"]] = None,
+        provider: Optional[Literal["fmp", "intrinio", "polygon", "tiingo"]] = None,
         **kwargs
     ) -> OBBject[List[Data]]:
         """Equity Historical price. Load stock data for a specific ticker.
@@ -61,19 +61,20 @@ class ROUTER_equity_price(Container):
             Start date of the data, in YYYY-MM-DD format.
         end_date : Optional[datetime.date]
             End date of the data, in YYYY-MM-DD format.
-        provider : Optional[Literal['fmp', 'intrinio', 'polygon']]
+        provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo']]
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'fmp' if there is
             no default.
         limit : Optional[Union[Annotated[int, Ge(ge=0)], int]]
-            Number of days to look back (Only for interval 1d). (provider: fmp); The number of data entries to return. (provider: polygon)
+            Number of days to look back (Only for interval 1d). (provider: fmp);
+            The number of data entries to return. (provider: polygon)
         start_time : Optional[datetime.time]
             Return intervals starting at the specified time on the `start_date` formatted as 'HH:MM:SS'. (provider: intrinio)
         end_time : Optional[datetime.time]
             Return intervals stopping at the specified time on the `end_date` formatted as 'HH:MM:SS'. (provider: intrinio)
         timezone : str
             Timezone of the data, in the IANA format (Continent/City). (provider: intrinio)
-        source : Optional[Literal['realtime', 'delayed', 'nasdaq_basic']]
+        source : Literal['realtime', 'delayed', 'nasdaq_basic']
             The source of the data. (provider: intrinio)
         sort : Literal['asc', 'desc']
             Sort order of the data. (provider: polygon)
@@ -85,7 +86,7 @@ class ROUTER_equity_price(Container):
         OBBject
             results : List[EquityHistorical]
                 Serializable results.
-            provider : Optional[Literal['fmp', 'intrinio', 'polygon']]
+            provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo']]
                 Provider name.
             warnings : Optional[List[Warning_]]
                 List of warnings.
@@ -113,7 +114,9 @@ class ROUTER_equity_price(Container):
         label : Optional[str]
             Human readable format of the date. (provider: fmp)
         adj_close : Optional[float]
-            Adjusted Close Price of the symbol. (provider: fmp); Adjusted closing price during the period. (provider: intrinio)
+            Adjusted Close Price of the symbol. (provider: fmp);
+            Adjusted closing price during the period. (provider: intrinio);
+            Adjusted closing price during the period. (provider: tiingo)
         unadjusted_volume : Optional[float]
             Unadjusted volume of the symbol. (provider: fmp)
         change : Optional[float]
@@ -131,19 +134,19 @@ class ROUTER_equity_price(Container):
         intra_period : Optional[bool]
             If true, the equity price represents an unfinished period (be it day, week, quarter, month, or year), meaning that the close price is the latest price available, not the official close price for the period (provider: intrinio)
         adj_open : Optional[float]
-            Adjusted open price during the period. (provider: intrinio)
+            Adjusted open price during the period. (provider: intrinio, tiingo)
         adj_high : Optional[float]
-            Adjusted high price during the period. (provider: intrinio)
+            Adjusted high price during the period. (provider: intrinio, tiingo)
         adj_low : Optional[float]
-            Adjusted low price during the period. (provider: intrinio)
+            Adjusted low price during the period. (provider: intrinio, tiingo)
         adj_volume : Optional[float]
-            Adjusted volume during the period. (provider: intrinio)
+            Adjusted volume during the period. (provider: intrinio, tiingo)
         factor : Optional[float]
             factor by which to multiply equity prices before this date, in order to calculate historically-adjusted equity prices. (provider: intrinio)
         split_ratio : Optional[float]
-            Ratio of the equity split, if a equity split occurred. (provider: intrinio)
+            Ratio of the equity split, if a equity split occurred. (provider: intrinio, tiingo)
         dividend : Optional[float]
-            Dividend amount, if a dividend was paid. (provider: intrinio)
+            Dividend amount, if a dividend was paid. (provider: intrinio, tiingo)
         percent_change : Optional[float]
             Percent change in the price of the symbol from the previous day. (provider: intrinio)
         fifty_two_week_high : Optional[float]
@@ -187,7 +190,7 @@ class ROUTER_equity_price(Container):
         provider: Optional[Literal["polygon"]] = None,
         **kwargs
     ) -> OBBject[List[Data]]:
-        """Equity Quote. Load National Best Bid and Offer for a specific equity.
+        """Equity NBBO. Load National Best Bid and Offer for a specific equity.
 
         Parameters
         ----------
@@ -405,7 +408,7 @@ class ROUTER_equity_price(Container):
         ],
         provider: Optional[Literal["fmp", "intrinio"]] = None,
         **kwargs
-    ) -> OBBject[Union[List[Data], Data]]:
+    ) -> OBBject[List[Data]]:
         """Equity Quote. Load stock data for a specific ticker.
 
         Parameters
@@ -422,7 +425,7 @@ class ROUTER_equity_price(Container):
         Returns
         -------
         OBBject
-            results : Union[List[EquityQuote], EquityQuote]
+            results : List[EquityQuote]
                 Serializable results.
             provider : Optional[Literal['fmp', 'intrinio']]
                 Provider name.
@@ -446,39 +449,39 @@ class ROUTER_equity_price(Container):
         name : Optional[str]
             Name of the company. (provider: fmp)
         price : Optional[float]
-            Current trading price of the stock. (provider: fmp)
+            Current trading price of the equity. (provider: fmp)
         changes_percentage : Optional[float]
-            Change percentage of the stock price. (provider: fmp)
+            Change percentage of the equity price. (provider: fmp)
         change : Optional[float]
-            Change in the stock price. (provider: fmp)
+            Change in the equity price. (provider: fmp)
         year_high : Optional[float]
-            Highest price of the stock in the last 52 weeks. (provider: fmp)
+            Highest price of the equity in the last 52 weeks. (provider: fmp)
         year_low : Optional[float]
-            Lowest price of the stock in the last 52 weeks. (provider: fmp)
+            Lowest price of the equity in the last 52 weeks. (provider: fmp)
         market_cap : Optional[float]
             Market cap of the company. (provider: fmp)
         price_avg50 : Optional[float]
-            50 days average price of the stock. (provider: fmp)
-        price_avg200 : Optional[int]
-            200 days average price of the stock. (provider: fmp)
+            50 days average price of the equity. (provider: fmp)
+        price_avg200 : Optional[float]
+            200 days average price of the equity. (provider: fmp)
         volume : Optional[int]
-            Volume of the stock in the current trading day. (provider: fmp)
+            Volume of the equity in the current trading day. (provider: fmp)
         avg_volume : Optional[int]
-            Average volume of the stock in the last 10 trading days. (provider: fmp)
+            Average volume of the equity in the last 10 trading days. (provider: fmp)
         exchange : Optional[str]
-            Exchange the stock is traded on. (provider: fmp)
+            Exchange the equity is traded on. (provider: fmp)
         open : Optional[float]
-            Opening price of the stock in the current trading day. (provider: fmp)
+            Opening price of the equity in the current trading day. (provider: fmp)
         previous_close : Optional[float]
-            Previous closing price of the stock. (provider: fmp)
+            Previous closing price of the equity. (provider: fmp)
         eps : Optional[float]
-            Earnings per share of the stock. (provider: fmp)
+            Earnings per share of the equity. (provider: fmp)
         pe : Optional[float]
-            Price earnings ratio of the stock. (provider: fmp)
+            Price earnings ratio of the equity. (provider: fmp)
         earnings_announcement : Optional[str]
-            Earnings announcement date of the stock. (provider: fmp)
+            Earnings announcement date of the equity. (provider: fmp)
         shares_outstanding : Optional[int]
-            Number of shares outstanding of the stock. (provider: fmp)
+            Number of shares outstanding of the equity. (provider: fmp)
         last_price : Optional[float]
             Price of the last trade. (provider: intrinio)
         last_time : Optional[datetime]

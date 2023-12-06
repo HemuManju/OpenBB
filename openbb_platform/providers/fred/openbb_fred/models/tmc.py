@@ -1,14 +1,13 @@
-"""TreasuryConstantMaturity Fetcher."""
-
+"""FRED Treasury Constant Maturity Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_fred.utils.fred_base import Fred
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.tmc import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.tmc import (
     TreasuryConstantMaturityData,
-    TreasuryConstantMaturityParams,
+    TreasuryConstantMaturityQueryParams,
 )
+from openbb_fred.utils.fred_base import Fred
 from pydantic import field_validator
 
 TMC_PARAMETER_TO_FRED_ID = {
@@ -17,12 +16,12 @@ TMC_PARAMETER_TO_FRED_ID = {
 }
 
 
-class FREDTreasuryConstantMaturityParams(TreasuryConstantMaturityParams):
-    """TreasuryConstantMaturityParams Query."""
+class FREDTreasuryConstantMaturityQueryParams(TreasuryConstantMaturityQueryParams):
+    """FRED Treasury Constant Maturity Query."""
 
 
 class FREDTreasuryConstantMaturityData(TreasuryConstantMaturityData):
-    """TreasuryConstantMaturityParams Data."""
+    """FRED Treasury Constant Maturity Data."""
 
     __alias_dict__ = {"rate": "value"}
 
@@ -38,22 +37,24 @@ class FREDTreasuryConstantMaturityData(TreasuryConstantMaturityData):
 
 class FREDTreasuryConstantMaturityFetcher(
     Fetcher[
-        FREDTreasuryConstantMaturityParams,
+        FREDTreasuryConstantMaturityQueryParams,
         List[FREDTreasuryConstantMaturityData],
     ]
 ):
-    """TreasuryConstantMaturityParams Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDTreasuryConstantMaturityData
 
     @staticmethod
-    def transform_query(params: Dict[str, Any]) -> FREDTreasuryConstantMaturityParams:
+    def transform_query(
+        params: Dict[str, Any]
+    ) -> FREDTreasuryConstantMaturityQueryParams:
         """Transform query."""
-        return FREDTreasuryConstantMaturityParams(**params)
+        return FREDTreasuryConstantMaturityQueryParams(**params)
 
     @staticmethod
     def extract_data(
-        query: FREDTreasuryConstantMaturityParams,
+        query: FREDTreasuryConstantMaturityQueryParams,
         credentials: Optional[Dict[str, str]],
         **kwargs: Any
     ) -> list:
@@ -72,7 +73,7 @@ class FREDTreasuryConstantMaturityFetcher(
 
     @staticmethod
     def transform_data(
-        query: FREDTreasuryConstantMaturityParams, data: list, **kwargs: Any
+        query: FREDTreasuryConstantMaturityQueryParams, data: list, **kwargs: Any
     ) -> List[FREDTreasuryConstantMaturityData]:
         """Transform data."""
         return [FREDTreasuryConstantMaturityData.model_validate(d) for d in data]

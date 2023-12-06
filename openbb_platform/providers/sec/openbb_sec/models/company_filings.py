@@ -1,8 +1,7 @@
-"""SEC Company Filings fetcher."""
+"""SEC Company Filings Model."""
 
 from datetime import (
     date as dateType,
-    datetime,
     timedelta,
 )
 from typing import Any, Dict, List, Optional, Union
@@ -10,12 +9,12 @@ from typing import Any, Dict, List, Optional, Union
 import pandas as pd
 import requests
 import requests_cache
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.company_filings import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.company_filings import (
     CompanyFilingsData,
     CompanyFilingsQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
 from openbb_sec.utils.definitions import FORM_TYPES, HEADERS
 from openbb_sec.utils.helpers import symbol_map
 from pydantic import Field
@@ -26,7 +25,10 @@ sec_session_company_filings = requests_cache.CachedSession(
 
 
 class SecCompanyFilingsQueryParams(CompanyFilingsQueryParams):
-    """SEC Company Filings Query Params."""
+    """SEC Company Filings Query.
+
+    Source: https://sec.gov/
+    """
 
     symbol: Optional[str] = Field(
         description=QUERY_DESCRIPTIONS.get("symbol", ""),
@@ -37,7 +39,9 @@ class SecCompanyFilingsQueryParams(CompanyFilingsQueryParams):
         default=None,
     )
     type: Optional[FORM_TYPES] = Field(
-        description="Type of the SEC filing form.", default=None
+        description="Type of the SEC filing form.",
+        default=None,
+        alias="form_type",
     )
     use_cache: bool = Field(
         description="Whether or not to use cache.  If True, cache will store for one day.",
@@ -49,20 +53,17 @@ class SecCompanyFilingsData(CompanyFilingsData):
     """SEC Company Filings Data."""
 
     __alias_dict__ = {
-        "date": "filingDate",
-        "link": "primaryDocumentUrl",
-        "type": "form",
+        "filing_date": "filingDate",
+        "accepted_date": "acceptanceDateTime",
+        "filing_url": "filingDetailUrl",
+        "report_url": "primaryDocumentUrl",
+        "report_type": "form",
     }
 
     report_date: Optional[dateType] = Field(
         description="The date of the filing.",
         default=None,
         alias="reportDate",
-    )
-    accepted_date: Optional[datetime] = Field(
-        description="Accepted date of the SEC filing.",
-        default=None,
-        alias="acceptanceDateTime",
     )
     act: Optional[Union[str, int]] = Field(
         description="The SEC Act number.", default=None
@@ -113,11 +114,6 @@ class SecCompanyFilingsData(CompanyFilingsData):
         default=None,
         alias="completeSubmissionUrl",
     )
-    filing_detail_url: Optional[str] = Field(
-        description="The URL to the filing details.",
-        default=None,
-        alias="filingDetailUrl",
-    )
     xml: Optional[str] = Field(
         description="The URL to the primary XML document.", default=None
     )
@@ -126,7 +122,7 @@ class SecCompanyFilingsData(CompanyFilingsData):
 class SecCompanyFilingsFetcher(
     Fetcher[SecCompanyFilingsQueryParams, List[SecCompanyFilingsData]]
 ):
-    """SEC Company Filings Fetcher."""
+    """Transform the query, extract and transform the data from the SEC endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> SecCompanyFilingsQueryParams:

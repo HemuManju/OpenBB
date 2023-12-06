@@ -18,7 +18,7 @@ from openbb_cboe.models.market_indices import (
     CboeMarketIndicesFetcher,
 )
 from openbb_cboe.models.options_chains import CboeOptionsChainsFetcher
-from openbb_provider.abstract.provider import Provider
+from openbb_core.provider.abstract.provider import Provider
 
 cboe_provider = Provider(
     name="cboe",
@@ -26,7 +26,7 @@ cboe_provider = Provider(
     description="""Cboe is the world's go-to derivatives and exchange network,
     delivering cutting-edge trading, clearing and investment solutions to people
     around the world.""",
-    required_credentials=None,
+    credentials=None,
     fetcher_dict={
         "EquitySearch": CboeEquitySearchFetcher,
         "OptionsChains": CboeOptionsChainsFetcher,

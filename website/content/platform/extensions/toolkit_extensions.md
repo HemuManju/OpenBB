@@ -26,11 +26,12 @@ import HeadTitle from '@site/src/components/General/HeadTitle.tsx';
 
 <HeadTitle title="Toolkits - Extensions | OpenBB Platform Docs" />
 
-OpenBB Toolkit Extensions expand the Platform with functions for manipulating data and preparing it for display.  The Core Platform installation does not install any toolkit extensions.  The table below is the current list of toolkit extensions.
+OpenBB Toolkit Extensions expand the Platform with functions for manipulating data and preparing it for display. The Core Platform installation does not install any toolkit extensions. The table below is the current list of toolkit extensions.
 
 | Extension Name | Description | Installation Command | Core/Community | Router Path |
 |:-----------------|:-----------:|:-------------------:|:------------------:|-------------:|
 | openbb-charting | Rest API charting service and Plotly library. | pip install openbb-charting | Community | N/A |
+| openbb-devtools | Aggregates dependencies that facilitate a nice development experience for OpenBB. | pip install openbb-devtools | N/A |
 | openbb-econometrics | Econometrics models for the Python interface only. | pip install openbb-econometrics | Community | obb.econometrics |
 | openbb-quantitative | Functions for performing quantitative analysis. | pip install openbb-quantitative | Community | obb.quantitative |
 | openbb-technical | Functions for performing technical analysis. | pip install openbb-technical | Community | obb.technical |
@@ -39,9 +40,9 @@ The sections below outline any specific installation considerations for the exte
 
 ## Charting
 
-The OpenBB Charting Extension supplies charting infrastructure and services to the OpenBB Platform.  Figure objects are served via REST API or Python Client.  It utilizes [PyWry](https://github.com/OpenBB-finance/pywry) for handling the display of interactive charts and tables in a separate window, with a Plotly library.  The extension framework allows developers to easily insert other Python charting libraries into the router pipeline.
+The OpenBB Charting Extension supplies charting infrastructure and services to the OpenBB Platform. Figure objects are served via REST API or Python Client.  It utilizes [PyWry](https://github.com/OpenBB-finance/pywry) for handling the display of interactive charts and tables in a separate window, with a Plotly library. The extension framework allows developers to easily insert other Python charting libraries into the router pipeline.
 
-Functions with charting enabled return figures to a field (`chart`) in the `OBBject` response object.  They are displayed with the class method, `show()`.  Additional Python libraries are installed with this extension:
+Functions with charting enabled return figures to a field (`chart`) in the `OBBject` response object. They are displayed with the class method, `show()`. Additional Python libraries are installed with this extension:
 
 - aiohttp
 - nbformat
@@ -89,14 +90,44 @@ When using Linux distributions, the PyWry dependency requires certain dependenci
 - Fedora:
 `sudo dnf install gtk3-devel webkit2gtk3-devel`
 
+## Devtools
+
+This extension aggregates the dependencies that facilitate a nice development experience
+for OpenBB. It does not contain any code itself, but rather pulls in the following dependencies:
+
+- bandit
+- black
+- ipykernel
+- mypy
+- poetry
+- pre-commit
+- pydocstyle
+- pylint
+- pytest
+- pytest-cov
+- ruff
+- tox
+- types-python-dateutil
+- types-toml
+
+### Installation
+
+The extension is included in the `dev_install.py` script.
+
+Standalone installation:
+
+```console
+pip install openbb-devtools
+```
+
 ## Econometrics
 
 The `openbb-econometrics` extension installs a new router path (`obb.econometrics`) and additional Python libraries:
 
-- scipy = "^1.10.1"
-- statsmodels = "^0.14.0"
-- arch = "^5.5.0"
-- linearmodels = "<=4.25"
+- scipy
+- statsmodels
+- arch
+- linearmodels
 
 :::note
 This extension is not accessible via REST API because `statsmodels` is not serializable.
@@ -144,7 +175,7 @@ After installation, the Python interface will automatically rebuild on initializ
 
 ## Technical
 
-The `openbb-technical` extension is for performing technical analysis on time series data.  It install a new router path (`obb.techincal`) and some additional Python libraries:
+The `openbb-technical` extension is for performing technical analysis on time series data. It installs a new router path (`obb.techincal`) and some additional Python libraries:
 
 - pandas-ta
 - scikit-learn

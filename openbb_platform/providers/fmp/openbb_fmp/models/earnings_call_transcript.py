@@ -1,20 +1,20 @@
-"""FMP Earnings Call Transcript fetcher."""
+"""FMP Earnings Call Transcript Model."""
 
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.earnings_call_transcript import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.earnings_call_transcript import (
     EarningsCallTranscriptData,
     EarningsCallTranscriptQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 from pydantic import field_validator
 
 
 class FMPEarningsCallTranscriptQueryParams(EarningsCallTranscriptQueryParams):
-    """FMP Earnings Calendar Query.
+    """FMP Earnings Call Transcript Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/earning-call-transcript-api/
     """

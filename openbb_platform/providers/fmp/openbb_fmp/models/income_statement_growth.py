@@ -1,20 +1,19 @@
-"""FMP Income Statement Growth Fetcher."""
-
+"""FMP Income Statement Growth Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.income_statement_growth import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.income_statement_growth import (
     IncomeStatementGrowthData,
     IncomeStatementGrowthQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 from pydantic import field_validator
 
 
 class FMPIncomeStatementGrowthQueryParams(IncomeStatementGrowthQueryParams):
-    """FMP Income Statement Growth QueryParams.
+    """FMP Income Statement Growth Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/financial-statements-growth-api/
     """

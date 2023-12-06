@@ -1,4 +1,4 @@
-"""Alpha Vantage Equity Historical End of Day fetcher."""
+"""Alpha Vantage Equity Historical Price Model."""
 
 
 from datetime import datetime
@@ -6,13 +6,16 @@ from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
 from openbb_alpha_vantage.utils.helpers import extract_key_name, get_data, get_interval
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_historical import (
     EquityHistoricalData,
     EquityHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import DATA_DESCRIPTIONS, QUERY_DESCRIPTIONS
-from openbb_provider.utils.helpers import get_querystring
+from openbb_core.provider.utils.descriptions import (
+    DATA_DESCRIPTIONS,
+    QUERY_DESCRIPTIONS,
+)
+from openbb_core.provider.utils.helpers import get_querystring
 from pydantic import (
     Field,
     NonNegativeFloat,
@@ -24,7 +27,7 @@ from pydantic import (
 
 
 class AVEquityHistoricalQueryParams(EquityHistoricalQueryParams):
-    """Alpha Vantage Equity Historical End of Day Query.
+    """Alpha Vantage Equity Historical Price Query.
 
     Source: https://www.alphavantage.co/documentation/#time-series-data
     """
@@ -108,7 +111,7 @@ class AVEquityHistoricalQueryParams(EquityHistoricalQueryParams):
 
 
 class AVEquityHistoricalData(EquityHistoricalData):
-    """Alpha Vantage Equity Historical End of Day Data."""
+    """Alpha Vantage Equity Historical Price Data."""
 
     __alias_dict__ = {"date": "timestamp", "adj_close": "adjusted_close"}
 
@@ -131,7 +134,7 @@ class AVEquityHistoricalFetcher(
         List[AVEquityHistoricalData],
     ]
 ):
-    """Transform the query, extract and transform the data from the Alpha Vantage endpoints."""
+    """Transform the query, extract and transform the data from the AlphaVantage endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> AVEquityHistoricalQueryParams:

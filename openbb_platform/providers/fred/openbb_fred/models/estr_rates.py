@@ -1,11 +1,10 @@
-"""FRED ESTR Fetcher."""
-
+"""FRED ESTR Model."""
 
 from typing import Any, Dict, List, Literal, Optional
 
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.estr_rates import ESTRData, ESTRQueryParams
 from openbb_fred.utils.fred_base import Fred
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.estr_rates import ESTRData, ESTRQueryParams
 from pydantic import Field, field_validator
 
 ESTR_PARAMETER_TO_ID = {
@@ -20,7 +19,7 @@ ESTR_PARAMETER_TO_ID = {
 
 
 class FREDESTRQueryParams(ESTRQueryParams):
-    """ESTR query."""
+    """FRED ESTR Query."""
 
     parameter: Literal[
         "volume_weighted_trimmed_mean_rate",
@@ -36,7 +35,7 @@ class FREDESTRQueryParams(ESTRQueryParams):
 
 
 class FREDESTRData(ESTRData):
-    """ESTR data."""
+    """FRED ESTR Data."""
 
     __alias_dict__ = {"rate": "value"}
 
@@ -53,7 +52,7 @@ class FREDESTRData(ESTRData):
 class FREDESTRFetcher(
     Fetcher[FREDESTRQueryParams, List[Dict[str, List[FREDESTRData]]]]
 ):
-    """FRED ESTR Fetcher."""
+    """Transform the query, extract and transform the data from the FRED endpoints."""
 
     data_type = FREDESTRData
 

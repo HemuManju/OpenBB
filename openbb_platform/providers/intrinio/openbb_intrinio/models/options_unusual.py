@@ -1,19 +1,19 @@
-"""Intrinio Unusual Options fetcher."""
+"""Intrinio Unusual Options Model."""
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from openbb_intrinio.utils.helpers import get_data_one
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.options_unusual import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.options_unusual import (
     OptionsUnusualData,
     OptionsUnusualQueryParams,
 )
+from openbb_intrinio.utils.helpers import get_data_one
 from pydantic import Field, field_validator
 
 
 class IntrinioOptionsUnusualQueryParams(OptionsUnusualQueryParams):
-    """Unusual Options from Intrinio, by optional ticker.
+    """Intrinio Unusual Options Query.
 
     source: https://docs.intrinio.com/documentation/web_api/get_unusual_activity_v2
     """
@@ -65,7 +65,7 @@ class IntrinioOptionsUnusualData(OptionsUnusualData):
 class IntrinioOptionsUnusualFetcher(
     Fetcher[IntrinioOptionsUnusualQueryParams, List[IntrinioOptionsUnusualData]]
 ):
-    """Perform TET for the Intrinio endpoints."""
+    """Transform the query, extract and transform the data from the Intrinio endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> IntrinioOptionsUnusualQueryParams:
@@ -79,7 +79,6 @@ class IntrinioOptionsUnusualFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Return the raw data from the Intrinio endpoint."""
-
         api_key = credentials.get("intrinio_api_key") if credentials else ""
 
         data: List = []

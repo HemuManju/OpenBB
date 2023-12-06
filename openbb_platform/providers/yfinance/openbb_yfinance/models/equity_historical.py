@@ -1,17 +1,17 @@
-"""yfinance Equity Historical End of Day Fetcher."""
+"""Yahoo Finance Equity Historical Price Model."""
 # ruff: noqa: SIM105
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_historical import (
     EquityHistoricalData,
     EquityHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_provider.utils.errors import EmptyDataError
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_yfinance.utils.helpers import yf_download
 from openbb_yfinance.utils.references import PERIODS
 from pandas import Timestamp, to_datetime
@@ -19,7 +19,7 @@ from pydantic import Field, PrivateAttr, field_validator
 
 
 class YFinanceEquityHistoricalQueryParams(EquityHistoricalQueryParams):
-    """YFinance Equity Historical End of Day Query.
+    """Yahoo Finance Equity Historical Price Query.
 
     Source: https://finance.yahoo.com/
     """
@@ -54,9 +54,6 @@ class YFinanceEquityHistoricalQueryParams(EquityHistoricalQueryParams):
         default=False,
         description="Adjust all OHLC data automatically.",
     )
-    back_adjust: bool = Field(
-        default=False, description="Attempt to adjust all the data automatically."
-    )
     ignore_tz: bool = Field(
         default=True,
         description="When combining from different timezones, ignore that part of datetime.",
@@ -70,7 +67,7 @@ class YFinanceEquityHistoricalQueryParams(EquityHistoricalQueryParams):
 
 
 class YFinanceEquityHistoricalData(EquityHistoricalData):
-    """YFinance Equity Historical End of Day Data."""
+    """Yahoo Finance Equity Historical Price Data."""
 
     @field_validator("date", mode="before", check_fields=False)
     def date_validate(cls, v):  # pylint: disable=E0213
@@ -86,7 +83,7 @@ class YFinanceEquityHistoricalFetcher(
         List[YFinanceEquityHistoricalData],
     ]
 ):
-    """Transform the query, extract and transform the data from the yfinance endpoints."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFinanceEquityHistoricalQueryParams:
@@ -108,7 +105,7 @@ class YFinanceEquityHistoricalFetcher(
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:
-        """Return the raw data from the yfinance endpoint."""
+        """Return the raw data from the Yahoo Finance endpoint."""
         if query.interval == "1W":
             query.interval = "1wk"
         elif query.interval == "1M":
@@ -125,14 +122,13 @@ class YFinanceEquityHistoricalFetcher(
             period=query._period,
             prepost=query.prepost,
             actions=query.include,
-            auto_adjust=query.adjusted,
-            back_adjust=query.back_adjust,
             progress=query._progress,
             ignore_tz=query.ignore_tz,
             keepna=query._keepna,
             repair=query._repair,
             rounding=query._rounding,
             group_by=query._group_by,
+            adjusted=query.adjusted,
         )
 
         if data.empty:
@@ -151,12 +147,9 @@ class YFinanceEquityHistoricalFetcher(
                 data.set_index("date", inplace=True)
                 data.index = to_datetime(data.index)
 
-            start_date_dt = datetime.combine(query.start_date, datetime.min.time())
-            end_date_dt = datetime.combine(query.end_date, datetime.min.time())
-
             data = data[
-                (data.index >= start_date_dt + timedelta(days=days))
-                & (data.index <= end_date_dt)
+                (data.index >= to_datetime(query.start_date))
+                & (data.index <= to_datetime(query.end_date + timedelta(days=days)))
             ]
 
         data.reset_index(inplace=True)

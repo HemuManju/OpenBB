@@ -1,27 +1,24 @@
-"""FMP Equity Peers fetcher."""
-
+"""FMP Equity Peers Model."""
 
 from typing import Any, Dict, Optional
 
-from openbb_fmp.utils.helpers import create_url, get_data_one
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_peers import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_peers import (
     EquityPeersData,
     EquityPeersQueryParams,
 )
-
-# FMP SPECIFIC FUNCTIONALITY CURRENTLY
+from openbb_fmp.utils.helpers import create_url, get_data_one
 
 
 class FMPEquityPeersQueryParams(EquityPeersQueryParams):
-    """FMP Equity Peers query.
+    """FMP Equity Peers Query.
 
     Source: https://site.financialmodelingprep.com/developer/docs/#Stock-Peers
     """
 
 
 class FMPEquityPeersData(EquityPeersData):
-    """FMP Equity Peers data."""
+    """FMP Equity Peers Data."""
 
 
 class FMPEquityPeersFetcher(

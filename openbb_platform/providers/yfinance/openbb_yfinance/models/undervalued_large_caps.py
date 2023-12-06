@@ -1,11 +1,12 @@
-"""Yahoo Finance undervalued large caps fetcher."""
+"""Yahoo Finance Asset Undervalued Large Caps Model."""
+
 import re
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import requests
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.equity_performance import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.equity_performance import (
     EquityPerformanceData,
     EquityPerformanceQueryParams,
 )
@@ -14,14 +15,14 @@ from pydantic import Field
 
 
 class YFUndervaluedLargeCapsQueryParams(EquityPerformanceQueryParams):
-    """YF asset performance undervalued large caps QueryParams.
+    """Yahoo Finance Asset Undervalued Large Caps Query.
 
     Source: https://finance.yahoo.com/screener/predefined/undervalued_large_caps
     """
 
 
 class YFUndervaluedLargeCapsData(EquityPerformanceData):
-    """YF asset performance undervalued large caps Data."""
+    """Yahoo Finance Asset Undervalued Large Caps Data."""
 
     __alias_dict__ = {
         "symbol": "Symbol",
@@ -50,7 +51,7 @@ class YFUndervaluedLargeCapsData(EquityPerformanceData):
 class YFUndervaluedLargeCapsFetcher(
     Fetcher[YFUndervaluedLargeCapsQueryParams, List[YFUndervaluedLargeCapsData]]
 ):
-    """YF asset performance undervalued large caps Fetcher."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFUndervaluedLargeCapsQueryParams:
@@ -74,7 +75,8 @@ class YFUndervaluedLargeCapsFetcher(
         df = (
             pd.read_html(html_clean, header=None)[0]
             .dropna(how="all", axis=1)
-            .replace(float("NaN"), "")
+            .fillna("-")
+            .replace("-", None)
         )
         return df
 
@@ -90,8 +92,6 @@ class YFUndervaluedLargeCapsFetcher(
         data["Avg Vol (3 month)"] = (
             data["Avg Vol (3 month)"].str.replace("M", "").astype(float) * 1000000
         )
-        data["Market Cap"] = data["Market Cap"].str.replace("B", "")
-        data = data.apply(pd.to_numeric, errors="ignore")
+        data["Market Cap"] = data["Market Cap"].str.replace("B", "").astype(float)
         data = data.to_dict(orient="records")
-        data = sorted(data, key=lambda d: d["Market Cap"], reverse=query.sort == "desc")
         return [YFUndervaluedLargeCapsData.model_validate(d) for d in data]

@@ -1,29 +1,33 @@
-"""CFTC Commitment of Traders Reports Search fetcher."""
+"""Nasdaq CFTC Commitment of Traders Reports Search Model."""
 
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from openbb_nasdaq.utils.series_ids import CFTC
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.cot_search import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.cot_search import (
     CotSearchData,
     CotSearchQueryParams,
 )
+from openbb_nasdaq.utils.series_ids import CFTC
 
 
 class NasdaqCotSearchQueryParams(CotSearchQueryParams):
-    """CFTC Commitment of Traders Reports Search query parameters.
+    """Nasdaq CFTC Commitment of Traders Reports Search Query.
 
     Source: https://data.nasdaq.com/data/CFTC-commodity-futures-trading-commission-reports/documentation
     """
 
 
 class NasdaqCotSearchData(CotSearchData):
-    """Nasdaq CFTC Commitment of Traders Reports Search data."""
+    """Nasdaq CFTC Commitment of Traders Reports Search Data."""
 
 
-class NasdaqCotSearchFetcher(Fetcher[CotSearchQueryParams, List[NasdaqCotSearchData]]):
-    """Nasdaq CFTC Commitment of Traders Reports Search Fetcher."""
+class NasdaqCotSearchFetcher(
+    Fetcher[NasdaqCotSearchQueryParams, List[NasdaqCotSearchData]]
+):
+    """Transform the query, extract and transform the data from the Nasdaq endpoints."""
+
+    require_credentials = False
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> NasdaqCotSearchQueryParams:

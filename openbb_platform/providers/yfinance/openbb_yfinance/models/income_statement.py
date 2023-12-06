@@ -1,12 +1,11 @@
-"""yfinance Income Statement Fetcher."""
-
+"""Yahoo Finance Income Statement Model."""
 
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.income_statement import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.income_statement import (
     IncomeStatementData,
     IncomeStatementQueryParams,
 )
@@ -15,14 +14,14 @@ from yfinance import Ticker
 
 
 class YFinanceIncomeStatementQueryParams(IncomeStatementQueryParams):
-    """yfinance Income Statement QueryParams.
+    """Yahoo Finance Income Statement Query.
 
     Source: https://finance.yahoo.com/
     """
 
 
 class YFinanceIncomeStatementData(IncomeStatementData):
-    """yfinance Income Statement Data."""
+    """Yahoo Finance Income Statement Data."""
 
     # TODO: Standardize the fields
     @field_validator("date", mode="before", check_fields=False)
@@ -38,6 +37,8 @@ class YFinanceIncomeStatementFetcher(
         List[YFinanceIncomeStatementData],
     ]
 ):
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
+
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFinanceIncomeStatementQueryParams:
         return YFinanceIncomeStatementQueryParams(**params)

@@ -1,4 +1,4 @@
-"""yfinance Crypto End of Day fetcher."""
+"""Yahoo Finance Crypto Historical Price Model."""
 # ruff: noqa: SIM105
 
 
@@ -6,13 +6,13 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from dateutil.relativedelta import relativedelta
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.crypto_historical import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.crypto_historical import (
     CryptoHistoricalData,
     CryptoHistoricalQueryParams,
 )
-from openbb_provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_provider.utils.errors import EmptyDataError
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_yfinance.utils.helpers import yf_download
 from openbb_yfinance.utils.references import INTERVALS, PERIODS
 from pandas import to_datetime
@@ -20,7 +20,7 @@ from pydantic import Field, field_validator
 
 
 class YFinanceCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
-    """YFinance Crypto End of Day Query.
+    """Yahoo Finance Crypto Historical Price Query.
 
     Source: https://finance.yahoo.com/crypto/
     """
@@ -32,11 +32,11 @@ class YFinanceCryptoHistoricalQueryParams(CryptoHistoricalQueryParams):
 
 
 class YFinanceCryptoHistoricalData(CryptoHistoricalData):
-    """YFinance Crypto End of Day Data."""
+    """Yahoo Finance Crypto Historical Price Data."""
 
     @field_validator("date", mode="before", check_fields=False)
     @classmethod
-    def date_validate(cls, v):  # pylint: disable=E0213
+    def date_validate(cls, v):
         """Return datetime object from string."""
         if isinstance(v, str):
             return datetime.strptime(v, "%Y-%m-%dT%H:%M:%S")
@@ -49,7 +49,7 @@ class YFinanceCryptoHistoricalFetcher(
         List[YFinanceCryptoHistoricalData],
     ]
 ):
-    """Transform the query, extract and transform the data from the yfinance endpoints."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFinanceCryptoHistoricalQueryParams:
@@ -67,11 +67,11 @@ class YFinanceCryptoHistoricalFetcher(
 
     @staticmethod
     def extract_data(
-        query: YFinanceCryptoHistoricalQueryParams,
+        query: YFinanceCryptoHistoricalQueryParams,  # pylint: disable=unused-argument
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:
-        """Return the raw data from the yfinance endpoint."""
+        """Return the raw data from the Yahoo Finance endpoint."""
         if "-" not in query.symbol:
             position = len(query.symbol) - 3
             query.symbol = query.symbol[:position] + "-" + query.symbol[position:]

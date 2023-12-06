@@ -1,22 +1,22 @@
-"""FMP ETF Country Weighting fetcher."""
+"""FMP ETF Countries Model."""
 
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from openbb_fmp.utils.helpers import create_url, get_data_many
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.etf_countries import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.etf_countries import (
     EtfCountriesData,
     EtfCountriesQueryParams,
 )
+from openbb_fmp.utils.helpers import create_url, get_data_many
 
 
 class FMPEtfCountriesQueryParams(EtfCountriesQueryParams):
-    """FMP ETF Country Weighting Params."""
+    """FMP ETF Countries Query."""
 
 
 class FMPEtfCountriesData(EtfCountriesData):
-    """FMP ETF Country Weighting Data."""
+    """FMP ETF Countries Data."""
 
 
 class FMPEtfCountriesFetcher(
@@ -39,7 +39,6 @@ class FMPEtfCountriesFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Return the raw data from the FMP endpoint."""
-
         api_key = credentials.get("fmp_api_key") if credentials else ""
         symbols = (
             query.symbol.split(",") if "," in query.symbol else [query.symbol.upper()]

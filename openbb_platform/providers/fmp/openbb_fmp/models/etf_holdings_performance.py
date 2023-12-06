@@ -1,8 +1,8 @@
-"""FMP ETF Holdings fetcher."""
+"""FMP ETF Holdings Performance Model."""
 
 from typing import Any, Dict, List, Optional
 
-from openbb_provider.abstract.fetcher import Fetcher
+from openbb_core.provider.abstract.fetcher import Fetcher
 
 from .etf_holdings import FMPEtfHoldingsFetcher
 from .etf_holdings_date import FMPEtfHoldingsDateFetcher
@@ -14,11 +14,11 @@ from .price_performance import (
 
 
 class FMPEtfHoldingsPerformanceQueryParams(FMPPricePerformanceQueryParams):
-    """FMP ETF Holdings Performance query."""
+    """FMP ETF Holdings Performance Query."""
 
 
 class FMPEtfHoldingsPerformanceData(FMPPricePerformanceData):
-    """FMP ETF Holdings Data."""
+    """FMP ETF Holdings Performance Data."""
 
 
 class FMPEtfHoldingsPerformanceFetcher(

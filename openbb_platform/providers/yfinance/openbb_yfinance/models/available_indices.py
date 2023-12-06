@@ -1,10 +1,10 @@
-"""Available Indices Fetcher for YFinance."""
+"""Yahoo Finance Available Indices Model."""
 
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from openbb_provider.abstract.fetcher import Fetcher
-from openbb_provider.standard_models.available_indices import (
+from openbb_core.provider.abstract.fetcher import Fetcher
+from openbb_core.provider.standard_models.available_indices import (
     AvailableIndicesData,
     AvailableIndicesQueryParams,
 )
@@ -13,11 +13,14 @@ from pydantic import Field
 
 
 class YFinanceAvailableIndicesQueryParams(AvailableIndicesQueryParams):
-    """Available Indices query for YFinance."""
+    """Yahoo Finance Available Indices Query.
+
+    Source: https://finance.yahoo.com/
+    """
 
 
 class YFinanceAvailableIndicesData(AvailableIndicesData):
-    """Available Indices data for YFinance."""
+    """Yahoo Finance Available Indices Data."""
 
     code: str = Field(
         description="ID code for keying the index in the OpenBB Terminal."
@@ -31,7 +34,7 @@ class YFinanceAvailableIndicesFetcher(
         List[YFinanceAvailableIndicesData],
     ]
 ):
-    """Transform the query, extract and transform the data."""
+    """Transform the query, extract and transform the data from the Yahoo Finance endpoints."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> YFinanceAvailableIndicesQueryParams:

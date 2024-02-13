@@ -1,7 +1,7 @@
 ### THIS FILE IS AUTO-GENERATED. DO NOT EDIT. ###
 
 import datetime
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from openbb_core.app.model.custom_parameter import OpenBBCustomParameter
 from openbb_core.app.model.obbject import OBBject
@@ -26,8 +26,7 @@ class ROUTER_equity_price(Container):
     def historical(
         self,
         symbol: Annotated[
-            Union[str, List[str]],
-            OpenBBCustomParameter(description="Symbol to get data for."),
+            str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
         interval: Annotated[
             Optional[str],
@@ -45,7 +44,9 @@ class ROUTER_equity_price(Container):
                 description="End date of the data, in YYYY-MM-DD format."
             ),
         ] = None,
-        provider: Optional[Literal["fmp", "intrinio", "polygon", "tiingo"]] = None,
+        provider: Optional[
+            Literal["fmp", "intrinio", "polygon", "tiingo", "yfinance"]
+        ] = None,
         **kwargs
     ) -> OBBject:
         """Equity Historical price. Load stock data for a specific ticker.
@@ -60,7 +61,7 @@ class ROUTER_equity_price(Container):
             Start date of the data, in YYYY-MM-DD format.
         end_date : Optional[datetime.date]
             End date of the data, in YYYY-MM-DD format.
-        provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo']]
+        provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo', 'yfinanc...
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'fmp' if there is
             no default.
@@ -78,14 +79,21 @@ class ROUTER_equity_price(Container):
         sort : Literal['asc', 'desc']
             Sort order of the data. (provider: polygon)
         adjusted : bool
-            Output time series is adjusted by historical split and dividend events. (provider: polygon)
+            Output time series is adjusted by historical split and dividend events. (provider: polygon);
+            Adjust all OHLC data automatically. (provider: yfinance)
+        prepost : bool
+            Include Pre and Post market data. (provider: yfinance)
+        include : bool
+            Include Dividends and Stock Splits in results. (provider: yfinance)
+        ignore_tz : bool
+            When combining from different timezones, ignore that part of datetime. (provider: yfinance)
 
         Returns
         -------
         OBBject
             results : List[EquityHistorical]
                 Serializable results.
-            provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo']]
+            provider : Optional[Literal['fmp', 'intrinio', 'polygon', 'tiingo', 'yfinance']]
                 Provider name.
             warnings : Optional[List[Warning_]]
                 List of warnings.
@@ -96,7 +104,7 @@ class ROUTER_equity_price(Container):
 
         EquityHistorical
         ----------------
-        date : datetime
+        date : Union[date, datetime]
             The date of the data.
         open : float
             The open price.
@@ -106,9 +114,9 @@ class ROUTER_equity_price(Container):
             The low price.
         close : float
             The close price.
-        volume : Union[float, int]
+        volume : Optional[Union[float, int]]
             The trading volume.
-        vwap : Optional[Annotated[float, Gt(gt=0)]]
+        vwap : Optional[float]
             Volume Weighted Average Price over the period.
         label : Optional[str]
             Human readable format of the date. (provider: fmp)
@@ -168,7 +176,7 @@ class ROUTER_equity_price(Container):
                     "provider": provider,
                 },
                 standard_params={
-                    "symbol": ",".join(symbol) if isinstance(symbol, list) else symbol,
+                    "symbol": symbol,
                     "interval": interval,
                     "start_date": start_date,
                     "end_date": end_date,
@@ -181,8 +189,7 @@ class ROUTER_equity_price(Container):
     def nbbo(
         self,
         symbol: Annotated[
-            Union[str, List[str]],
-            OpenBBCustomParameter(description="Symbol to get data for."),
+            str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
         provider: Optional[Literal["polygon"]] = None,
         **kwargs
@@ -297,7 +304,7 @@ class ROUTER_equity_price(Container):
                     "provider": provider,
                 },
                 standard_params={
-                    "symbol": ",".join(symbol) if isinstance(symbol, list) else symbol,
+                    "symbol": symbol,
                 },
                 extra_params=kwargs,
             )
@@ -307,8 +314,7 @@ class ROUTER_equity_price(Container):
     def performance(
         self,
         symbol: Annotated[
-            Union[str, List[str]],
-            OpenBBCustomParameter(description="Symbol to get data for."),
+            str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
         provider: Optional[Literal["fmp"]] = None,
         **kwargs
@@ -384,7 +390,7 @@ class ROUTER_equity_price(Container):
                     "provider": provider,
                 },
                 standard_params={
-                    "symbol": ",".join(symbol) if isinstance(symbol, list) else symbol,
+                    "symbol": symbol,
                 },
                 extra_params=kwargs,
             )
@@ -394,12 +400,12 @@ class ROUTER_equity_price(Container):
     def quote(
         self,
         symbol: Annotated[
-            Union[str, List[str]],
+            str,
             OpenBBCustomParameter(
                 description="Symbol to get data for. This endpoint will accept multiple symbols separated by commas."
             ),
         ],
-        provider: Optional[Literal["fmp", "intrinio"]] = None,
+        provider: Optional[Literal["fmp", "intrinio", "yfinance"]] = None,
         **kwargs
     ) -> OBBject:
         """Equity Quote. Load stock data for a specific ticker.
@@ -408,7 +414,7 @@ class ROUTER_equity_price(Container):
         ----------
         symbol : str
             Symbol to get data for. This endpoint will accept multiple symbols separated by commas.
-        provider : Optional[Literal['fmp', 'intrinio']]
+        provider : Optional[Literal['fmp', 'intrinio', 'yfinance']]
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'fmp' if there is
             no default.
@@ -420,7 +426,7 @@ class ROUTER_equity_price(Container):
         OBBject
             results : List[EquityQuote]
                 Serializable results.
-            provider : Optional[Literal['fmp', 'intrinio']]
+            provider : Optional[Literal['fmp', 'intrinio', 'yfinance']]
                 Provider name.
             warnings : Optional[List[Warning_]]
                 List of warnings.
@@ -483,9 +489,9 @@ class ROUTER_equity_price(Container):
             The low price.
         close : Optional[float]
             The close price.
-        volume : Optional[Union[int, float]]
+        volume : Optional[Union[float, int]]
             The trading volume.
-        exchange_volume : Optional[Union[int, float]]
+        exchange_volume : Optional[Union[float, int]]
             Volume of shares exchanged during the trading day on the specific exchange.
         prev_close : Optional[float]
 
@@ -521,6 +527,16 @@ class ROUTER_equity_price(Container):
             Date and Time when the data was last updated. (provider: intrinio)
         security : Optional[openbb_intrinio.utils.references.IntrinioSecurity]
             Security details related to the quote. (provider: intrinio)
+        ma_50d : Optional[float]
+            50-day moving average price. (provider: yfinance)
+        ma_200d : Optional[float]
+            200-day moving average price. (provider: yfinance)
+        volume_average : Optional[float]
+            Average daily trading volume. (provider: yfinance)
+        volume_average_10d : Optional[float]
+            Average daily trading volume in the last 10 days. (provider: yfinance)
+        currency : Optional[str]
+            Currency of the price. (provider: yfinance)
 
         Example
         -------
@@ -535,7 +551,7 @@ class ROUTER_equity_price(Container):
                     "provider": provider,
                 },
                 standard_params={
-                    "symbol": ",".join(symbol) if isinstance(symbol, list) else symbol,
+                    "symbol": symbol,
                 },
                 extra_params=kwargs,
             )

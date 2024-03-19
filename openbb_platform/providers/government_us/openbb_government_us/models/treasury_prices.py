@@ -1,5 +1,6 @@
 """US Government Treasury Prices"""
 
+# pylint: disable=unused-argument
 import asyncio
 from datetime import datetime, timedelta
 from io import StringIO
@@ -8,15 +9,16 @@ from typing import Any, Dict, List, Literal, Optional
 import requests
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.treasury_prices import (
-    USTreasuryPricesData,
-    USTreasuryPricesQueryParams,
+    TreasuryPricesData,
+    TreasuryPricesQueryParams,
 )
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_government_us.utils.helpers import get_random_agent
-from pandas import read_csv, to_datetime
+from pandas import Index, read_csv, to_datetime
 from pydantic import Field
 
 
-class GovernmentUSTreasuryPricesQueryParams(USTreasuryPricesQueryParams):
+class GovernmentUSTreasuryPricesQueryParams(TreasuryPricesQueryParams):
     """US Government Treasury Prices Query."""
 
     cusip: Optional[str] = Field(description="Filter by CUSIP.", default=None)
@@ -26,7 +28,7 @@ class GovernmentUSTreasuryPricesQueryParams(USTreasuryPricesQueryParams):
     )
 
 
-class GovernmentUSTreasuryPricesData(USTreasuryPricesData):
+class GovernmentUSTreasuryPricesData(TreasuryPricesData):
     """US Government Treasury Prices Data."""
 
 
@@ -110,18 +112,21 @@ class GovernmentUSTreasuryPricesFetcher(
         """Transform the data."""
 
         try:
+            if not data:
+                raise EmptyDataError("Data not found")
             results = read_csv(StringIO(data), header=0)
-            columns = [
-                "cusip",
-                "security_type",
-                "rate",
-                "maturity_date",
-                "call_date",
-                "bid",
-                "offer",
-                "eod_price",
-            ]
-            results.columns = columns
+            results.columns = Index(
+                [
+                    "cusip",
+                    "security_type",
+                    "rate",
+                    "maturity_date",
+                    "call_date",
+                    "bid",
+                    "offer",
+                    "eod_price",
+                ]
+            )
             results["date"] = query.date.strftime("%Y-%m-%d")  # type: ignore
             for col in ["maturity_date", "call_date"]:
                 results[col] = (
@@ -135,7 +140,7 @@ class GovernmentUSTreasuryPricesFetcher(
                 )
 
         except Exception as e:
-            raise RuntimeError("No data was returned: " + str(e)) from e
+            raise RuntimeError(e) from e
 
         if query.security_type is not None:
             results = results[

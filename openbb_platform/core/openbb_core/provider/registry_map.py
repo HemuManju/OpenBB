@@ -1,6 +1,7 @@
 """Provider registry map."""
 
 import sys
+from copy import deepcopy
 from inspect import getfile, isclass
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, get_origin
@@ -82,9 +83,10 @@ class RegistryMap:
                 standard_data, extra_data = self.extract_info(fetcher, "data")
                 if model_name not in map_:
                     map_[model_name] = {}
+                    # The deepcopy avoids modifications from one model to affect another
                     map_[model_name]["openbb"] = {
-                        "QueryParams": standard_query,
-                        "Data": standard_data,
+                        "QueryParams": deepcopy(standard_query),
+                        "Data": deepcopy(standard_data),
                     }
                 map_[model_name][p] = {
                     "QueryParams": extra_query,
@@ -98,7 +100,38 @@ class RegistryMap:
                         {p: {"model": provider_model, "is_list": is_list}}
                     )
 
+                self._merge_json_schema_extra(p, fetcher, map_[model_name])
+
         return map_, return_schemas
+
+    def _merge_json_schema_extra(
+        self,
+        provider: str,
+        fetcher: Fetcher,
+        model_map: dict,
+    ):
+        """Merge json schema extra for different providers"""
+        model: BaseModel = RegistryMap._get_model(fetcher, "query_params")
+        std_fields = model_map["openbb"]["QueryParams"]["fields"]
+        extra_fields = model_map[provider]["QueryParams"]["fields"]
+        for f, props in getattr(model, "__json_schema_extra__", {}).items():
+            for p in props:
+                if f in std_fields:
+                    model_field = std_fields[f]
+                elif f in extra_fields:
+                    model_field = extra_fields[f]
+                else:
+                    continue
+
+                if model_field.json_schema_extra is None:
+                    model_field.json_schema_extra = {}
+
+                if p not in model_field.json_schema_extra:
+                    model_field.json_schema_extra[p] = []
+
+                providers = model_field.json_schema_extra[p]
+                if provider not in providers:
+                    providers.append(provider)
 
     def _get_models(self, map_: MapType) -> List[str]:
         """Get available models."""

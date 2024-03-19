@@ -1,7 +1,7 @@
 ### THIS FILE IS AUTO-GENERATED. DO NOT EDIT. ###
 
 import datetime
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from warnings import simplefilter, warn
 
 from annotated_types import Ge
@@ -9,7 +9,7 @@ from openbb_core.app.deprecation import OpenBBDeprecationWarning
 from openbb_core.app.model.custom_parameter import OpenBBCustomParameter
 from openbb_core.app.model.obbject import OBBject
 from openbb_core.app.static.container import Container
-from openbb_core.app.static.utils.decorators import validate
+from openbb_core.app.static.utils.decorators import exception_handler, validate
 from openbb_core.app.static.utils.filters import filter_inputs
 from typing_extensions import Annotated, deprecated
 
@@ -46,6 +46,7 @@ class ROUTER_equity_fundamental(Container):
     def __repr__(self) -> str:
         return self.__doc__ or ""
 
+    @exception_handler
     @validate
     def balance(
         self,
@@ -59,10 +60,15 @@ class ROUTER_equity_fundamental(Container):
             Optional[Annotated[int, Ge(ge=0)]],
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 5,
-        provider: Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Balance Sheet. Balance sheet statement.
+        """Get the balance sheet for a given company.
 
         Parameters
         ----------
@@ -116,7 +122,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         BalanceSheet
@@ -376,17 +382,22 @@ class ROUTER_equity_fundamental(Container):
         total_equity : Optional[int]
             Total equity (provider: polygon)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.balance(symbol="AAPL", period="annual", limit=5)
+        >>> obb.equity.fundamental.balance(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.balance(symbol='AAPL', period='annual', limit=5, provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/balance",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/balance",
+                        ("fmp", "intrinio", "polygon", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -397,6 +408,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def balance_growth(
         self,
@@ -407,10 +419,15 @@ class ROUTER_equity_fundamental(Container):
             int,
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 10,
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Balance Sheet Statement Growth. Information about the growth of the company balance sheet.
+        """Get the growth of a company's balance sheet items over time.
 
         Parameters
         ----------
@@ -434,7 +451,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         BalanceSheetGrowth
@@ -524,17 +541,22 @@ class ROUTER_equity_fundamental(Container):
         growth_net_debt : float
             Growth rate of net debt.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.balance_growth(symbol="AAPL", limit=10)
+        >>> obb.equity.fundamental.balance_growth(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.balance_growth(symbol='AAPL', limit=10, provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/balance_growth",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/balance_growth",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -544,6 +566,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def cash(
         self,
@@ -557,10 +580,15 @@ class ROUTER_equity_fundamental(Container):
             Optional[Annotated[int, Ge(ge=0)]],
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 5,
-        provider: Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Cash Flow Statement. Information about the cash flow statement.
+        """Get the cash flow statement for a given company.
 
         Parameters
         ----------
@@ -614,7 +642,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         CashFlowStatement
@@ -697,6 +725,10 @@ class ROUTER_equity_fundamental(Container):
             Link to the filing. (provider: fmp)
         final_link : Optional[str]
             Link to the filing document. (provider: fmp)
+        net_income_continuing_operations : Optional[float]
+            Net Income (Continuing Operations) (provider: intrinio)
+        net_income_discontinued_operations : Optional[float]
+            Net Income (Discontinued Operations) (provider: intrinio)
         provision_for_loan_losses : Optional[float]
             Provision for Loan Losses (provider: intrinio)
         provision_for_credit_losses : Optional[float]
@@ -715,10 +747,6 @@ class ROUTER_equity_fundamental(Container):
             Net Cash from Continuing Operating Activities (provider: intrinio)
         net_cash_from_discontinued_operating_activities : Optional[float]
             Net Cash from Discontinued Operating Activities (provider: intrinio)
-        net_income_continuing_operations : Optional[float]
-            Net Income (Continuing Operations) (provider: intrinio)
-        net_income_discontinued_operations : Optional[float]
-            Net Income (Discontinued Operations) (provider: intrinio)
         divestitures : Optional[float]
             Divestitures (provider: intrinio)
         sale_of_property_plant_and_equipment : Optional[float]
@@ -782,17 +810,22 @@ class ROUTER_equity_fundamental(Container):
         net_cash_flow : Optional[int]
             Net cash flow. (provider: polygon)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.cash(symbol="AAPL", period="annual", limit=5)
+        >>> obb.equity.fundamental.cash(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.cash(symbol='AAPL', period='annual', limit=5, provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/cash",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/cash",
+                        ("fmp", "intrinio", "polygon", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -803,6 +836,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def cash_growth(
         self,
@@ -813,10 +847,15 @@ class ROUTER_equity_fundamental(Container):
             int,
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 10,
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Cash Flow Statement Growth. Information about the growth of the company cash flow statement.
+        """Get the growth of a company's cash flow statement items over time.
 
         Parameters
         ----------
@@ -840,7 +879,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         CashFlowStatementGrowth
@@ -912,17 +951,22 @@ class ROUTER_equity_fundamental(Container):
         growth_free_cash_flow : float
             Growth rate of free cash flow.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.cash_growth(symbol="AAPL", limit=10)
+        >>> obb.equity.fundamental.cash_growth(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.cash_growth(symbol='AAPL', limit=10, provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/cash_growth",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/cash_growth",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -932,6 +976,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def dividends(
         self,
@@ -950,18 +995,23 @@ class ROUTER_equity_fundamental(Container):
                 description="End date of the data, in YYYY-MM-DD format."
             ),
         ] = None,
-        provider: Optional[Literal["fmp", "intrinio", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Historical Dividends. Historical dividends data for a given company.
+        """Get historical dividend data for a given company.
 
         Parameters
         ----------
         symbol : str
             Symbol to get data for.
-        start_date : Optional[datetime.date]
+        start_date : Union[datetime.date, None, str]
             Start date of the data, in YYYY-MM-DD format.
-        end_date : Optional[datetime.date]
+        end_date : Union[datetime.date, None, str]
             End date of the data, in YYYY-MM-DD format.
         provider : Optional[Literal['fmp', 'intrinio', 'yfinance']]
             The provider to use for the query, by default None.
@@ -981,7 +1031,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         HistoricalDividends
@@ -1007,17 +1057,21 @@ class ROUTER_equity_fundamental(Container):
         split_ratio : Optional[float]
             The ratio of the stock split, if a stock split occurred. (provider: intrinio)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.dividends(symbol="AAPL")
+        >>> obb.equity.fundamental.dividends(symbol='AAPL', provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/dividends",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/dividends",
+                        ("fmp", "intrinio", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1028,16 +1082,22 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def employee_count(
         self,
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Historical Employees. Historical number of employees.
+        """Get historical employee count data for a given company.
 
         Parameters
         ----------
@@ -1059,7 +1119,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         HistoricalEmployees
@@ -1083,17 +1143,21 @@ class ROUTER_equity_fundamental(Container):
         source : str
             Source URL which retrieves this data for the company.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.employee_count(symbol="AAPL")
+        >>> obb.equity.fundamental.employee_count(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/employee_count",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/employee_count",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1102,6 +1166,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def filings(
         self,
@@ -1118,10 +1183,20 @@ class ROUTER_equity_fundamental(Container):
             int,
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 100,
-        provider: Optional[Literal["fmp", "intrinio", "sec"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "sec"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Company Filings. Company filings data.
+        """Get the URLs to SEC filings reported to EDGAR database, such as 10-K, 10-Q, 8-K, and more. SEC
+        filings include Form 10-K, Form 10-Q, Form 8-K, the proxy statement, Forms 3, 4, and 5, Schedule 13, Form 114,
+        Foreign Investment Disclosures and others. The annual 10-K report is required to be
+        filed annually and includes the company's financial statements, management discussion and analysis,
+        and audited financial statements.
+
 
         Parameters
         ----------
@@ -1141,7 +1216,7 @@ class ROUTER_equity_fundamental(Container):
             End date of the data, in YYYY-MM-DD format. (provider: intrinio)
         thea_enabled : Optional[bool]
             Return filings that have been read by Intrinio's Thea NLP. (provider: intrinio)
-        cik : Optional[Union[str, int]]
+        cik : Optional[Union[int, str]]
             Lookup filings by Central Index Key (CIK) instead of by symbol. (provider: sec)
         type : Optional[Literal['1', '1-A', '1-A POS', '1-A-W', '1-E', '1-E AD', '1-K', '1-SA', '1-U', '1-Z', '1-Z-W', '10-12B', '10-12G', '10-D', '10-K', '10-KT', '10-Q', '10-QT', '11-K', '11-KT', '13F-HR', '13F-NT', '13FCONP', '144', '15-12B', '15-12G', '15-15D', '15F-12B', '15F-12G', '15F-15D', '18-12B', '18-K', '19B-4E', '2-A', '2-AF', '2-E', '20-F', '20FR12B', '20FR12G', '24F-2NT', '25', '25-NSE', '253G1', '253G2', '253G3', '253G4', '3', '305B2', '34-12H', '4', '40-17F1', '40-17F2', '40-17G', '40-17GCS', '40-202A', '40-203A', '40-206A', '40-24B2', '40-33', '40-6B', '40-8B25', '40-8F-2', '40-APP', '40-F', '40-OIP', '40FR12B', '40FR12G', '424A', '424B1', '424B2', '424B3', '424B4', '424B5', '424B7', '424B8', '424H', '425', '485APOS', '485BPOS', '485BXT', '486APOS', '486BPOS', '486BXT', '487', '497', '497AD', '497H2', '497J', '497K', '497VPI', '497VPU', '5', '6-K', '6B NTC', '6B ORDR', '8-A12B', '8-A12G', '8-K', '8-K12B', '8-K12G3', '8-K15D5', '8-M', '8F-2 NTC', '8F-2 ORDR', '9-M', 'ABS-15G', 'ABS-EE', 'ADN-MTL', 'ADV-E', 'ADV-H-C', 'ADV-H-T', 'ADV-NR', 'ANNLRPT', 'APP NTC', 'APP ORDR', 'APP WD', 'APP WDG', 'ARS', 'ATS-N', 'ATS-N-C', 'ATS-N/UA', 'AW', 'AW WD', 'C', 'C-AR', 'C-AR-W', 'C-TR', 'C-TR-W', 'C-U', 'C-U-W', 'C-W', 'CB', 'CERT', 'CERTARCA', 'CERTBATS', 'CERTCBO', 'CERTNAS', 'CERTNYS', 'CERTPAC', 'CFPORTAL', 'CFPORTAL-W', 'CORRESP', 'CT ORDER', 'D', 'DEF 14A', 'DEF 14C', 'DEFA14A', 'DEFA14C', 'DEFC14A', 'DEFC14C', 'DEFM14A', 'DEFM14C', 'DEFN14A', 'DEFR14A', 'DEFR14C', 'DEL AM', 'DFAN14A', 'DFRN14A', 'DOS', 'DOSLTR', 'DRS', 'DRSLTR', 'DSTRBRPT', 'EFFECT', 'F-1', 'F-10', 'F-10EF', 'F-10POS', 'F-1MEF', 'F-3', 'F-3ASR', 'F-3D', 'F-3DPOS', 'F-3MEF', 'F-4', 'F-4 POS', 'F-4MEF', 'F-6', 'F-6 POS', 'F-6EF', 'F-7', 'F-7 POS', 'F-8', 'F-8 POS', 'F-80', 'F-80POS', 'F-9', 'F-9 POS', 'F-N', 'F-X', 'FOCUSN', 'FWP', 'G-405', 'G-405N', 'G-FIN', 'G-FINW', 'IRANNOTICE', 'MA', 'MA-A', 'MA-I', 'MA-W', 'MSD', 'MSDCO', 'MSDW', 'N-1', 'N-14', 'N-14 8C', 'N-14MEF', 'N-18F1', 'N-1A', 'N-2', 'N-2 POSASR', 'N-23C-2', 'N-23C3A', 'N-23C3B', 'N-23C3C', 'N-2ASR', 'N-2MEF', 'N-30B-2', 'N-30D', 'N-4', 'N-5', 'N-54A', 'N-54C', 'N-6', 'N-6F', 'N-8A', 'N-8B-2', 'N-8F', 'N-8F NTC', 'N-8F ORDR', 'N-CEN', 'N-CR', 'N-CSR', 'N-CSRS', 'N-MFP', 'N-MFP1', 'N-MFP2', 'N-PX', 'N-Q', 'N-VP', 'N-VPFS', 'NO ACT', 'NPORT-EX', 'NPORT-NP', 'NPORT-P', 'NRSRO-CE', 'NRSRO-UPD', 'NSAR-A', 'NSAR-AT', 'NSAR-B', 'NSAR-BT', 'NSAR-U', 'NT 10-D', 'NT 10-K', 'NT 10-Q', 'NT 11-K', 'NT 20-F', 'NT N-CEN', 'NT N-MFP', 'NT N-MFP1', 'NT N-MFP2', 'NT NPORT-EX', 'NT NPORT-P', 'NT-NCEN', 'NT-NCSR', 'NT-NSAR', 'NTFNCEN', 'NTFNCSR', 'NTFNSAR', 'NTN 10D', 'NTN 10K', 'NTN 10Q', 'NTN 20F', 'OIP NTC', 'OIP ORDR', 'POS 8C', 'POS AM', 'POS AMI', 'POS EX', 'POS462B', 'POS462C', 'POSASR', 'PRE 14A', 'PRE 14C', 'PREC14A', 'PREC14C', 'PREM14A', 'PREM14C', 'PREN14A', 'PRER14A', 'PRER14C', 'PRRN14A', 'PX14A6G', 'PX14A6N', 'QRTLYRPT', 'QUALIF', 'REG-NR', 'REVOKED', 'RW', 'RW WD', 'S-1', 'S-11', 'S-11MEF', 'S-1MEF', 'S-20', 'S-3', 'S-3ASR', 'S-3D', 'S-3DPOS', 'S-3MEF', 'S-4', 'S-4 POS', 'S-4EF', 'S-4MEF', 'S-6', 'S-8', 'S-8 POS', 'S-B', 'S-BMEF', 'SBSE', 'SBSE-A', 'SBSE-BD', 'SBSE-C', 'SBSE-W', 'SC 13D', 'SC 13E1', 'SC 13E3', 'SC 13G', 'SC 14D9', 'SC 14F1', 'SC 14N', 'SC TO-C', 'SC TO-I', 'SC TO-T', 'SC13E4F', 'SC14D1F', 'SC14D9C', 'SC14D9F', 'SD', 'SDR', 'SE', 'SEC ACTION', 'SEC STAFF ACTION', 'SEC STAFF LETTER', 'SF-1', 'SF-3', 'SL', 'SP 15D2', 'STOP ORDER', 'SUPPL', 'T-3', 'TA-1', 'TA-2', 'TA-W', 'TACO', 'TH', 'TTW', 'UNDER', 'UPLOAD', 'WDL-REQ', 'X-17A-5']]
             Type of the SEC filing form. (provider: sec)
@@ -1159,7 +1234,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         CompanyFilings
@@ -1192,7 +1267,7 @@ class ROUTER_equity_fundamental(Container):
             Industry category of the company. (provider: intrinio)
         report_date : Optional[date]
             The date of the filing. (provider: sec)
-        act : Optional[Union[str, int]]
+        act : Optional[Union[int, str]]
             The SEC Act number. (provider: sec)
         items : Optional[Union[str, float]]
             The SEC Item numbers. (provider: sec)
@@ -1200,34 +1275,39 @@ class ROUTER_equity_fundamental(Container):
             The description of the primary document. (provider: sec)
         primary_doc : Optional[str]
             The filename of the primary document. (provider: sec)
-        accession_number : Optional[Union[str, int]]
+        accession_number : Optional[Union[int, str]]
             The accession number. (provider: sec)
-        file_number : Optional[Union[str, int]]
+        file_number : Optional[Union[int, str]]
             The file number. (provider: sec)
-        film_number : Optional[Union[str, int]]
+        film_number : Optional[Union[int, str]]
             The film number. (provider: sec)
-        is_inline_xbrl : Optional[Union[str, int]]
+        is_inline_xbrl : Optional[Union[int, str]]
             Whether the filing is an inline XBRL filing. (provider: sec)
-        is_xbrl : Optional[Union[str, int]]
+        is_xbrl : Optional[Union[int, str]]
             Whether the filing is an XBRL filing. (provider: sec)
-        size : Optional[Union[str, int]]
+        size : Optional[Union[int, str]]
             The size of the filing. (provider: sec)
         complete_submission_url : Optional[str]
             The URL to the complete filing submission. (provider: sec)
         filing_detail_url : Optional[str]
             The URL to the filing details. (provider: sec)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.filings(limit=100)
+        >>> obb.equity.fundamental.filings(provider='fmp')
+        >>> obb.equity.fundamental.filings(limit=100, provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/filings",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/filings",
+                        ("fmp", "intrinio", "sec"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1238,14 +1318,21 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def historical_attributes(
         self,
         symbol: Annotated[
-            str, OpenBBCustomParameter(description="Symbol to get data for.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Symbol to get data for. Multiple items allowed for provider(s): intrinio."
+            ),
         ],
         tag: Annotated[
-            str, OpenBBCustomParameter(description="Intrinio data tag ID or code.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Intrinio data tag ID or code. Multiple items allowed for provider(s): intrinio."
+            ),
         ],
         start_date: Annotated[
             Union[datetime.date, None, str],
@@ -1275,20 +1362,25 @@ class ROUTER_equity_fundamental(Container):
             Optional[Literal["asc", "desc"]],
             OpenBBCustomParameter(description="Sort order."),
         ] = "desc",
-        provider: Optional[Literal["intrinio"]] = None,
+        provider: Annotated[
+            Optional[Literal["intrinio"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'intrinio' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Fetch the historical values of a data tag from Intrinio.
+        """Get the historical values of a data tag from Intrinio.
 
         Parameters
         ----------
-        symbol : str
-            Symbol to get data for.
-        tag : str
-            Intrinio data tag ID or code.
-        start_date : Optional[datetime.date]
+        symbol : Union[str, List[str]]
+            Symbol to get data for. Multiple items allowed for provider(s): intrinio.
+        tag : Union[str, List[str]]
+            Intrinio data tag ID or code. Multiple items allowed for provider(s): intrinio.
+        start_date : Union[datetime.date, None, str]
             Start date of the data, in YYYY-MM-DD format.
-        end_date : Optional[datetime.date]
+        end_date : Union[datetime.date, None, str]
             End date of the data, in YYYY-MM-DD format.
         frequency : Optional[Literal['daily', 'weekly', 'monthly', 'quarterly', 'year...
             The frequency of the data.
@@ -1314,7 +1406,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         HistoricalAttributes
@@ -1328,17 +1420,21 @@ class ROUTER_equity_fundamental(Container):
         value : Optional[float]
             The value of the data.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.historical_attributes(symbol="AAPL", tag="ebitda", frequency="yearly", limit=1000, sort="desc")
+        >>> obb.equity.fundamental.historical_attributes(symbol='AAPL', tag='ebitda', provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/historical_attributes",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/historical_attributes",
+                        ("intrinio",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1351,19 +1447,29 @@ class ROUTER_equity_fundamental(Container):
                     "sort": sort,
                 },
                 extra_params=kwargs,
+                extra_info={
+                    "symbol": {"multiple_items_allowed": ["intrinio"]},
+                    "tag": {"multiple_items_allowed": ["intrinio"]},
+                },
             )
         )
 
+    @exception_handler
     @validate
     def historical_eps(
         self,
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Historical earnings-per-share for a given company.
+        """Get historical earnings per share data for a given company.
 
         Parameters
         ----------
@@ -1387,7 +1493,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         HistoricalEps
@@ -1413,17 +1519,21 @@ class ROUTER_equity_fundamental(Container):
         period_ending : Optional[date]
             The fiscal period end date. (provider: fmp)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.historical_eps(symbol="AAPL")
+        >>> obb.equity.fundamental.historical_eps(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/historical_eps",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/historical_eps",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1432,16 +1542,22 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def historical_splits(
         self,
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Historical Splits. Historical splits data.
+        """Get historical stock splits for a given company.
 
         Parameters
         ----------
@@ -1463,7 +1579,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         HistoricalSplits
@@ -1477,17 +1593,21 @@ class ROUTER_equity_fundamental(Container):
         denominator : float
             Denominator of the historical stock splits.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.historical_splits(symbol="AAPL")
+        >>> obb.equity.fundamental.historical_splits(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/historical_splits",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/historical_splits",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1496,6 +1616,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def income(
         self,
@@ -1509,10 +1630,15 @@ class ROUTER_equity_fundamental(Container):
             Optional[Annotated[int, Ge(ge=0)]],
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 5,
-        provider: Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "polygon", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Income Statement. Report on a company's financial performance.
+        """Get the income statement for a given company.
 
         Parameters
         ----------
@@ -1566,7 +1692,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         IncomeStatement
@@ -1828,17 +1954,22 @@ class ROUTER_equity_fundamental(Container):
         preferred_stock_dividends_and_other_adjustments : Optional[float]
             Preferred stock dividends and other adjustments (provider: polygon)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.income(symbol="AAPL", period="annual", limit=5)
+        >>> obb.equity.fundamental.income(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.income(symbol='AAPL', period='annual', limit=5, provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/income",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/income",
+                        ("fmp", "intrinio", "polygon", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1849,6 +1980,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def income_growth(
         self,
@@ -1863,10 +1995,15 @@ class ROUTER_equity_fundamental(Container):
             Literal["quarter", "annual"],
             OpenBBCustomParameter(description="Time period of the data to return."),
         ] = "annual",
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Income Statement Growth. Information about the growth of the company income statement.
+        """Get the growth of a company's income statement items over time.
 
         Parameters
         ----------
@@ -1874,7 +2011,7 @@ class ROUTER_equity_fundamental(Container):
             Symbol to get data for.
         limit : int
             The number of data entries to return.
-        period : Literal['annual', 'quarter']
+        period : Literal['quarter', 'annual']
             Time period of the data to return.
         provider : Optional[Literal['fmp']]
             The provider to use for the query, by default None.
@@ -1892,7 +2029,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         IncomeStatementGrowth
@@ -1956,17 +2093,22 @@ class ROUTER_equity_fundamental(Container):
         growth_weighted_average_shs_out_dil : float
             Growth rate of diluted weighted average shares outstanding.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.income_growth(symbol="AAPL", limit=10, period="annual")
+        >>> obb.equity.fundamental.income_growth(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.income_growth(symbol='AAPL', limit=10, period='annual', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/income_growth",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/income_growth",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -1977,26 +2119,38 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def latest_attributes(
         self,
         symbol: Annotated[
-            str, OpenBBCustomParameter(description="Symbol to get data for.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Symbol to get data for. Multiple items allowed for provider(s): intrinio."
+            ),
         ],
         tag: Annotated[
-            str, OpenBBCustomParameter(description="Intrinio data tag ID or code.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Intrinio data tag ID or code. Multiple items allowed for provider(s): intrinio."
+            ),
         ],
-        provider: Optional[Literal["intrinio"]] = None,
+        provider: Annotated[
+            Optional[Literal["intrinio"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'intrinio' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Fetch the latest value of a data tag from Intrinio.
+        """Get the latest value of a data tag from Intrinio.
 
         Parameters
         ----------
-        symbol : str
-            Symbol to get data for.
-        tag : str
-            Intrinio data tag ID or code.
+        symbol : Union[str, List[str]]
+            Symbol to get data for. Multiple items allowed for provider(s): intrinio.
+        tag : Union[str, List[str]]
+            Intrinio data tag ID or code. Multiple items allowed for provider(s): intrinio.
         provider : Optional[Literal['intrinio']]
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'intrinio' if there is
@@ -2013,7 +2167,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         LatestAttributes
@@ -2025,36 +2179,50 @@ class ROUTER_equity_fundamental(Container):
         value : Optional[Union[str, float]]
             The value of the data.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.latest_attributes(symbol="AAPL", tag="ceo")
+        >>> obb.equity.fundamental.latest_attributes(symbol='AAPL', tag='ceo', provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/latest_attributes",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/latest_attributes",
+                        ("intrinio",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
                     "tag": tag,
                 },
                 extra_params=kwargs,
+                extra_info={
+                    "symbol": {"multiple_items_allowed": ["intrinio"]},
+                    "tag": {"multiple_items_allowed": ["intrinio"]},
+                },
             )
         )
 
+    @exception_handler
     @validate
     def management(
         self,
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
-        provider: Optional[Literal["fmp", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Key Executives. Key executives for a given company.
+        """Get executive management team data for a given company.
 
         Parameters
         ----------
@@ -2076,7 +2244,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         KeyExecutives
@@ -2100,17 +2268,21 @@ class ROUTER_equity_fundamental(Container):
         unexercised_value : Optional[int]
             Value of shares not exercised. (provider: yfinance)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.management(symbol="AAPL")
+        >>> obb.equity.fundamental.management(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/management",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/management",
+                        ("fmp", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -2119,11 +2291,15 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def management_compensation(
         self,
         symbol: Annotated[
-            str, OpenBBCustomParameter(description="Symbol to get data for.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Symbol to get data for. Multiple items allowed for provider(s): fmp."
+            ),
         ],
         start_date: Annotated[
             Union[datetime.date, None, str],
@@ -2137,18 +2313,23 @@ class ROUTER_equity_fundamental(Container):
                 description="End date of the data, in YYYY-MM-DD format."
             ),
         ] = None,
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Get Executive Compensation. Information about the executive compensation for a given company.
+        """Get executive management team compensation for a given company over time.
 
         Parameters
         ----------
-        symbol : str
-            Symbol to get data for.
-        start_date : Optional[datetime.date]
+        symbol : Union[str, List[str]]
+            Symbol to get data for. Multiple items allowed for provider(s): fmp.
+        start_date : Union[datetime.date, None, str]
             Start date of the data, in YYYY-MM-DD format.
-        end_date : Optional[datetime.date]
+        end_date : Union[datetime.date, None, str]
             End date of the data, in YYYY-MM-DD format.
         provider : Optional[Literal['fmp']]
             The provider to use for the query, by default None.
@@ -2166,7 +2347,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         ExecutiveCompensation
@@ -2198,17 +2379,21 @@ class ROUTER_equity_fundamental(Container):
         url : str
             URL of the filing data.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.management_compensation(symbol="AAPL")
+        >>> obb.equity.fundamental.management_compensation(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/management_compensation",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/management_compensation",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -2216,14 +2401,19 @@ class ROUTER_equity_fundamental(Container):
                     "end_date": end_date,
                 },
                 extra_params=kwargs,
+                extra_info={"symbol": {"multiple_items_allowed": ["fmp"]}},
             )
         )
 
+    @exception_handler
     @validate
     def metrics(
         self,
         symbol: Annotated[
-            str, OpenBBCustomParameter(description="Symbol to get data for.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Symbol to get data for. Multiple items allowed for provider(s): fmp, intrinio, yfinance."
+            ),
         ],
         period: Annotated[
             Optional[Literal["annual", "quarter"]],
@@ -2233,15 +2423,20 @@ class ROUTER_equity_fundamental(Container):
             Optional[int],
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 100,
-        provider: Optional[Literal["fmp", "intrinio", "yfinance"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio", "yfinance"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Key Metrics. Key metrics for a given company.
+        """Get fundamental metrics for a given company.
 
         Parameters
         ----------
-        symbol : str
-            Symbol to get data for.
+        symbol : Union[str, List[str]]
+            Symbol to get data for. Multiple items allowed for provider(s): fmp, intrinio, yfinance.
         period : Optional[Literal['annual', 'quarter']]
             Time period of the data to return.
         limit : Optional[int]
@@ -2256,7 +2451,7 @@ class ROUTER_equity_fundamental(Container):
         Returns
         -------
         OBBject
-            results : Union[List[KeyMetrics], KeyMetrics]
+            results : List[KeyMetrics]
                 Serializable results.
             provider : Optional[Literal['fmp', 'intrinio', 'yfinance']]
                 Provider name.
@@ -2264,7 +2459,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         KeyMetrics
@@ -2299,8 +2494,8 @@ class ROUTER_equity_fundamental(Container):
             Shareholders equity per share (provider: fmp)
         interest_debt_per_share : Optional[float]
             Interest debt per share (provider: fmp)
-        enterprise_value : Optional[Union[float, int]]
-            Enterprise value (provider: fmp, yfinance)
+        enterprise_value : Optional[int]
+            Enterprise value (provider: fmp, intrinio, yfinance)
         price_to_sales_ratio : Optional[float]
             Price-to-sales ratio (provider: fmp)
         pocf_ratio : Optional[float]
@@ -2320,7 +2515,8 @@ class ROUTER_equity_fundamental(Container):
         ev_to_free_cash_flow : Optional[float]
             Enterprise value-to-free cash flow ratio (provider: fmp)
         earnings_yield : Optional[float]
-            Earnings yield (provider: fmp)
+            Earnings yield (provider: fmp);
+            Earnings yield, as a normalized percent. (provider: intrinio)
         free_cash_flow_yield : Optional[float]
             Free cash flow yield (provider: fmp)
         debt_to_equity : Optional[float]
@@ -2391,15 +2587,73 @@ class ROUTER_equity_fundamental(Container):
             Return on equity (provider: fmp)
         capex_per_share : Optional[float]
             Capital expenditures per share (provider: fmp)
+        price_to_book : Optional[float]
+            Price to book ratio. (provider: intrinio, yfinance)
+        price_to_tangible_book : Optional[float]
+            Price to tangible book ratio. (provider: intrinio)
+        price_to_revenue : Optional[float]
+            Price to revenue ratio. (provider: intrinio)
+        quick_ratio : Optional[float]
+            Quick ratio. (provider: intrinio, yfinance)
+        gross_margin : Optional[float]
+            Gross margin, as a normalized percent. (provider: intrinio, yfinance)
+        ebit_margin : Optional[float]
+            EBIT margin, as a normalized percent. (provider: intrinio)
+        profit_margin : Optional[float]
+            Profit margin, as a normalized percent. (provider: intrinio, yfinance)
+        eps : Optional[float]
+            Basic earnings per share. (provider: intrinio)
+        eps_growth : Optional[float]
+            EPS growth, as a normalized percent. (provider: intrinio)
+        revenue_growth : Optional[float]
+            Revenue growth, as a normalized percent. (provider: intrinio, yfinance)
+        ebitda_growth : Optional[float]
+            EBITDA growth, as a normalized percent. (provider: intrinio)
+        ebit_growth : Optional[float]
+            EBIT growth, as a normalized percent. (provider: intrinio)
+        net_income_growth : Optional[float]
+            Net income growth, as a normalized percent. (provider: intrinio)
+        free_cash_flow_to_firm_growth : Optional[float]
+            Free cash flow to firm growth, as a normalized percent. (provider: intrinio)
+        invested_capital_growth : Optional[float]
+            Invested capital growth, as a normalized percent. (provider: intrinio)
+        return_on_assets : Optional[float]
+            Return on assets, as a normalized percent. (provider: intrinio, yfinance)
+        return_on_equity : Optional[float]
+            Return on equity, as a normalized percent. (provider: intrinio, yfinance)
+        return_on_invested_capital : Optional[float]
+            Return on invested capital, as a normalized percent. (provider: intrinio)
+        ebitda : Optional[int]
+            Earnings before interest, taxes, depreciation, and amortization. (provider: intrinio)
+        ebit : Optional[int]
+            Earnings before interest and taxes. (provider: intrinio)
+        long_term_debt : Optional[int]
+            Long-term debt. (provider: intrinio)
+        total_debt : Optional[int]
+            Total debt. (provider: intrinio)
+        total_capital : Optional[int]
+            The sum of long-term debt and total shareholder equity. (provider: intrinio)
+        free_cash_flow_to_firm : Optional[int]
+            Free cash flow to firm. (provider: intrinio)
+        altman_z_score : Optional[float]
+            Altman Z-score. (provider: intrinio)
         beta : Optional[float]
-            Beta relative to the broad market calculated on a rolling three-year basis. (provider: intrinio);
+            Beta relative to the broad market (rolling three-year). (provider: intrinio);
             Beta relative to the broad market (5-year monthly). (provider: yfinance)
-        volume : Optional[float]
-            Volume (provider: intrinio)
-        fifty_two_week_high : Optional[float]
+        last_price : Optional[float]
+            Last price of the stock. (provider: intrinio)
+        year_high : Optional[float]
             52 week high (provider: intrinio)
-        fifty_two_week_low : Optional[float]
+        year_low : Optional[float]
             52 week low (provider: intrinio)
+        volume_avg : Optional[int]
+            Average daily volume. (provider: intrinio)
+        short_interest : Optional[int]
+            Number of shares reported as sold short. (provider: intrinio)
+        shares_outstanding : Optional[int]
+            Weighted average shares outstanding (TTM). (provider: intrinio)
+        days_to_cover : Optional[float]
+            Days to cover short interest, based on average daily volume. (provider: intrinio)
         forward_pe : Optional[float]
             Forward price-to-earnings ratio. (provider: yfinance)
         peg_ratio : Optional[float]
@@ -2416,30 +2670,16 @@ class ROUTER_equity_fundamental(Container):
             Earnings growth (Year Over Year), as a normalized percent. (provider: yfinance)
         earnings_growth_quarterly : Optional[float]
             Quarterly earnings growth (Year Over Year), as a normalized percent. (provider: yfinance)
-        revenue_growth : Optional[float]
-            Revenue growth (Year Over Year), as a normalized percent. (provider: yfinance)
         enterprise_to_revenue : Optional[float]
             Enterprise value to revenue ratio. (provider: yfinance)
-        quick_ratio : Optional[float]
-            Quick ratio. (provider: yfinance)
-        gross_margin : Optional[float]
-            Gross margin, as a normalized percent. (provider: yfinance)
-        ebitda_margin : Optional[float]
-            EBITDA margin, as a normalized percent. (provider: yfinance)
         operating_margin : Optional[float]
             Operating margin, as a normalized percent. (provider: yfinance)
-        profit_margin : Optional[float]
-            Profit margin, as a normalized percent. (provider: yfinance)
-        return_on_assets : Optional[float]
-            Return on assets, as a normalized percent. (provider: yfinance)
-        return_on_equity : Optional[float]
-            Return on equity, as a normalized percent. (provider: yfinance)
+        ebitda_margin : Optional[float]
+            EBITDA margin, as a normalized percent. (provider: yfinance)
         dividend_yield_5y_avg : Optional[float]
             5-year average dividend yield, as a normalized percent. (provider: yfinance)
         book_value : Optional[float]
             Book value per share. (provider: yfinance)
-        price_to_book : Optional[float]
-            Price-to-book ratio. (provider: yfinance)
         overall_risk : Optional[float]
             Overall risk score. (provider: yfinance)
         audit_risk : Optional[float]
@@ -2455,17 +2695,22 @@ class ROUTER_equity_fundamental(Container):
         currency : Optional[str]
             Currency in which the data is presented. (provider: yfinance)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.metrics(symbol="AAPL", period="annual", limit=100)
+        >>> obb.equity.fundamental.metrics(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.metrics(symbol='AAPL', period='annual', limit=100, provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/metrics",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/metrics",
+                        ("fmp", "intrinio", "yfinance"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -2473,24 +2718,38 @@ class ROUTER_equity_fundamental(Container):
                     "limit": limit,
                 },
                 extra_params=kwargs,
+                extra_info={
+                    "symbol": {
+                        "multiple_items_allowed": ["fmp", "intrinio", "yfinance"]
+                    }
+                },
             )
         )
 
+    @exception_handler
     @validate
     def multiples(
         self,
         symbol: Annotated[
-            str, OpenBBCustomParameter(description="Symbol to get data for.")
+            Union[str, List[str]],
+            OpenBBCustomParameter(
+                description="Symbol to get data for. Multiple items allowed for provider(s): fmp."
+            ),
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Equity Valuation Multiples. Valuation multiples for a stock ticker.
+        """Get equity valuation multiples for a given company.
 
         Parameters
         ----------
-        symbol : str
-            Symbol to get data for.
+        symbol : Union[str, List[str]]
+            Symbol to get data for. Multiple items allowed for provider(s): fmp.
         provider : Optional[Literal['fmp']]
             The provider to use for the query, by default None.
             If None, the provider specified in defaults is selected or 'fmp' if there is
@@ -2507,7 +2766,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         EquityValuationMultiples
@@ -2635,25 +2894,31 @@ class ROUTER_equity_fundamental(Container):
         capex_per_share_ttm : Optional[float]
             Capital expenditures per share calculated as trailing twelve months.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.multiples(symbol="AAPL")
+        >>> obb.equity.fundamental.multiples(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/multiples",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/multiples",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
                 },
                 extra_params=kwargs,
+                extra_info={"symbol": {"multiple_items_allowed": ["fmp"]}},
             )
         )
 
+    @exception_handler
     @validate
     @deprecated(
         "This endpoint is deprecated; use `/equity/profile` instead. Deprecated in OpenBB Platform V4.1 to be removed in V4.3.",
@@ -2664,10 +2929,15 @@ class ROUTER_equity_fundamental(Container):
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Company Overview. General information about a company.
+        """Get company general business and stock data for a given company.
 
         Parameters
         ----------
@@ -2689,7 +2959,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         CompanyOverview
@@ -2767,10 +3037,10 @@ class ROUTER_equity_fundamental(Container):
         is_fund : bool
             If the company is a fund.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.overview(symbol="AAPL")
+        >>> obb.equity.fundamental.overview(symbol='AAPL', provider='fmp')
         """  # noqa: E501
 
         simplefilter("always", DeprecationWarning)
@@ -2784,7 +3054,11 @@ class ROUTER_equity_fundamental(Container):
             "/equity/fundamental/overview",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/overview",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -2793,6 +3067,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def ratios(
         self,
@@ -2806,10 +3081,15 @@ class ROUTER_equity_fundamental(Container):
             int,
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 12,
-        provider: Optional[Literal["fmp", "intrinio"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp", "intrinio"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Extensive set of ratios over time. Financial ratios for a given company.
+        """Get an extensive set of financial and accounting ratios for a given company over time.
 
         Parameters
         ----------
@@ -2837,7 +3117,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         FinancialRatios
@@ -2961,17 +3241,22 @@ class ROUTER_equity_fundamental(Container):
         price_fair_value : Optional[float]
             Price fair value. (provider: fmp)
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.ratios(symbol="AAPL", period="annual", limit=12)
+        >>> obb.equity.fundamental.ratios(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.ratios(symbol='AAPL', period='annual', limit=12, provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/ratios",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/ratios",
+                        ("fmp", "intrinio"),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -2982,6 +3267,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def reported_financials(
         self,
@@ -3003,10 +3289,15 @@ class ROUTER_equity_fundamental(Container):
                 description="The number of data entries to return. Although the response object contains multiple results, because of the variance in the fields, year-to-year and quarter-to-quarter, it is recommended to view results in small chunks."
             ),
         ] = 100,
-        provider: Optional[Literal["intrinio"]] = None,
+        provider: Annotated[
+            Optional[Literal["intrinio"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'intrinio' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Financial statements, as-reported.
+        """Get financial statements as reported by the company.
 
         Parameters
         ----------
@@ -3036,7 +3327,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         ReportedFinancials
@@ -3048,17 +3339,27 @@ class ROUTER_equity_fundamental(Container):
         fiscal_year : Optional[int]
             The fiscal year of the fiscal period.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.reported_financials(symbol="AAPL", period="annual", statement_type="balance", limit=100)
+        >>> obb.equity.fundamental.reported_financials(symbol='AAPL', provider='intrinio')
+        >>> # Get AAPL balance sheet with a limit of 10 items.
+        >>> obb.equity.fundamental.reported_financials(symbol='AAPL', period='annual', statement_type='balance', limit=10, provider='intrinio')
+        >>> # Get reported income statement
+        >>> obb.equity.fundamental.reported_financials(symbol='AAPL', statement_type='income', provider='intrinio')
+        >>> # Get reported cash flow statement
+        >>> obb.equity.fundamental.reported_financials(symbol='AAPL', statement_type='cash', provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/reported_financials",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/reported_financials",
+                        ("intrinio",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -3070,6 +3371,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def revenue_per_geography(
         self,
@@ -3084,10 +3386,15 @@ class ROUTER_equity_fundamental(Container):
             Literal["hierarchical", "flat"],
             OpenBBCustomParameter(description="Structure of the returned data."),
         ] = "flat",
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Revenue Geographic. Geographic revenue data.
+        """Get the revenue geographic breakdown for a given company over time.
 
         Parameters
         ----------
@@ -3113,7 +3420,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         RevenueGeographic
@@ -3129,17 +3436,22 @@ class ROUTER_equity_fundamental(Container):
         geographic_segment : int
             Dictionary of the revenue by geographic segment.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.revenue_per_geography(symbol="AAPL", period="annual", structure="flat")
+        >>> obb.equity.fundamental.revenue_per_geography(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.revenue_per_geography(symbol='AAPL', period='annual', structure='flat', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/revenue_per_geography",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/revenue_per_geography",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -3150,6 +3462,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def revenue_per_segment(
         self,
@@ -3164,10 +3477,15 @@ class ROUTER_equity_fundamental(Container):
             Literal["hierarchical", "flat"],
             OpenBBCustomParameter(description="Structure of the returned data."),
         ] = "flat",
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Revenue Business Line. Business line revenue data.
+        """Get the revenue breakdown by business segment for a given company over time.
 
         Parameters
         ----------
@@ -3193,7 +3511,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         RevenueBusinessLine
@@ -3209,17 +3527,22 @@ class ROUTER_equity_fundamental(Container):
         business_line : int
             Dictionary containing the revenue of the business line.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.revenue_per_segment(symbol="AAPL", period="annual", structure="flat")
+        >>> obb.equity.fundamental.revenue_per_segment(symbol='AAPL', provider='fmp')
+        >>> obb.equity.fundamental.revenue_per_segment(symbol='AAPL', period='annual', structure='flat', provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/revenue_per_segment",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/revenue_per_segment",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -3230,6 +3553,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def search_attributes(
         self,
@@ -3240,10 +3564,15 @@ class ROUTER_equity_fundamental(Container):
             Optional[int],
             OpenBBCustomParameter(description="The number of data entries to return."),
         ] = 1000,
-        provider: Optional[Literal["intrinio"]] = None,
+        provider: Annotated[
+            Optional[Literal["intrinio"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'intrinio' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Search Intrinio data tags.
+        """Search Intrinio data tags to search in latest or historical attributes.
 
         Parameters
         ----------
@@ -3267,7 +3596,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         SearchAttributes
@@ -3295,17 +3624,21 @@ class ROUTER_equity_fundamental(Container):
         unit : Optional[str]
             Unit of the financial attribute.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.search_attributes(query="AAPL", limit=1000)
+        >>> obb.equity.fundamental.search_attributes(query='ebitda', provider='intrinio')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/search_attributes",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/search_attributes",
+                        ("intrinio",),
+                    )
                 },
                 standard_params={
                     "query": query,
@@ -3315,22 +3648,28 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def trailing_dividend_yield(
         self,
         symbol: Annotated[
             str, OpenBBCustomParameter(description="Symbol to get data for.")
-        ] = None,
+        ],
         limit: Annotated[
             Optional[int],
             OpenBBCustomParameter(
                 description="The number of data entries to return. Default is 252, the number of trading days in a year."
             ),
         ] = 252,
-        provider: Optional[Literal["tiingo"]] = None,
+        provider: Annotated[
+            Optional[Literal["tiingo"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'tiingo' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Trailing 1yr dividend yield.
+        """Get the 1 year trailing dividend yield for a given company over time.
 
         Parameters
         ----------
@@ -3354,7 +3693,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         TrailingDividendYield
@@ -3364,17 +3703,22 @@ class ROUTER_equity_fundamental(Container):
         trailing_dividend_yield : float
             Trailing dividend yield.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.trailing_dividend_yield(limit=252)
+        >>> obb.equity.fundamental.trailing_dividend_yield(symbol='AAPL', provider='tiingo')
+        >>> obb.equity.fundamental.trailing_dividend_yield(symbol='AAPL', limit=252, provider='tiingo')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/trailing_dividend_yield",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/trailing_dividend_yield",
+                        ("tiingo",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,
@@ -3384,6 +3728,7 @@ class ROUTER_equity_fundamental(Container):
             )
         )
 
+    @exception_handler
     @validate
     def transcript(
         self,
@@ -3394,10 +3739,15 @@ class ROUTER_equity_fundamental(Container):
             int,
             OpenBBCustomParameter(description="Year of the earnings call transcript."),
         ],
-        provider: Optional[Literal["fmp"]] = None,
+        provider: Annotated[
+            Optional[Literal["fmp"]],
+            OpenBBCustomParameter(
+                description="The provider to use for the query, by default None.\n    If None, the provider specified in defaults is selected or 'fmp' if there is\n    no default."
+            ),
+        ] = None,
         **kwargs
     ) -> OBBject:
-        """Earnings Call Transcript. Earnings call transcript for a given company.
+        """Get earnings call transcripts for a given company.
 
         Parameters
         ----------
@@ -3421,7 +3771,7 @@ class ROUTER_equity_fundamental(Container):
                 List of warnings.
             chart : Optional[Chart]
                 Chart object.
-            extra: Dict[str, Any]
+            extra : Dict[str, Any]
                 Extra info.
 
         EarningsCallTranscript
@@ -3437,17 +3787,21 @@ class ROUTER_equity_fundamental(Container):
         content : str
             Content of the earnings call transcript.
 
-        Example
-        -------
+        Examples
+        --------
         >>> from openbb import obb
-        >>> obb.equity.fundamental.transcript(symbol="AAPL", year=2020)
+        >>> obb.equity.fundamental.transcript(symbol='AAPL', year=2020, provider='fmp')
         """  # noqa: E501
 
         return self._run(
             "/equity/fundamental/transcript",
             **filter_inputs(
                 provider_choices={
-                    "provider": provider,
+                    "provider": self._get_provider(
+                        provider,
+                        "/equity/fundamental/transcript",
+                        ("fmp",),
+                    )
                 },
                 standard_params={
                     "symbol": symbol,

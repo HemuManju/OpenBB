@@ -37,7 +37,7 @@ def test_extension_map():
     """Ensure only required extensions are built and versions respect pyproject.toml"""
     this_dir = Path(__file__).parent
     ext_map = load_ext_map(
-        Path(this_dir, "..", "openbb", "package", "extension_map.json")
+        Path(this_dir, "..", "openbb", "assets", "extension_map.json")
     )
     req_ext = load_req_ext(Path(this_dir, "..", "pyproject.toml"))
 
@@ -48,8 +48,10 @@ def test_extension_map():
         )
 
     for name, version in ext_map.items():
-        if name not in req_ext:
-            continue
+        assert name in req_ext, (
+            f"'{name}' is not a required extension in pyproject.toml, uninstall it and"
+            " rebuild, or add it to pyproject.toml"
+        )
         assert req_ext[name].allows(version), (
             f"Version '{version}' of extension '{name}' is not compatible with the"
             f" version '{req_ext[name]}' constraint in pyproject.toml"

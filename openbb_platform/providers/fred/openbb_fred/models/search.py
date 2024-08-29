@@ -1,5 +1,7 @@
 """FRED Search Model."""
 
+# pylint: disable=unused-argument
+
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from openbb_core.provider.abstract.fetcher import Fetcher
@@ -8,10 +10,7 @@ from openbb_core.provider.standard_models.fred_search import (
     SearchQueryParams,
 )
 from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_core.provider.utils.helpers import (
-    amake_request,
-    get_querystring,
-)
+from openbb_core.provider.utils.errors import EmptyDataError
 from pydantic import Field, NonNegativeInt
 
 
@@ -20,6 +19,10 @@ class FredSearchQueryParams(SearchQueryParams):
 
     __alias_dict__ = {
         "query": "search_text",
+    }
+    __json_schema_extra__ = {
+        "tag_names": {"multiple_items_allowed": True},
+        "exclude_tag_names": {"multiple_items_allowed": True},
     }
 
     is_release: Optional[bool] = Field(
@@ -39,8 +42,8 @@ class FredSearchQueryParams(SearchQueryParams):
         default=0,
         description="Offset the results in conjunction with limit.",
     )
-    filter_variable: Literal[None, "frequency", "units", "seasonal_adjustment"] = Field(
-        default=None, description="Filter by an attribute."
+    filter_variable: Optional[Literal["frequency", "units", "seasonal_adjustment"]] = (
+        Field(default=None, description="Filter by an attribute.")
     )
     filter_value: Optional[str] = Field(
         default=None,
@@ -55,13 +58,25 @@ class FredSearchQueryParams(SearchQueryParams):
         description="A semicolon delimited list of tag names that series match none of.  Example: 'imports;services'."
         + " Requires that variable tag_names also be set to limit the number of matching series.",
     )
+    series_id: Optional[str] = Field(
+        default=None,
+        description="A FRED Series ID to return series group information for."
+        + " This returns the required information to query for regional data."
+        + " Not all series that are in FRED have geographical data."
+        + " Entering a value for series_id will override all other parameters."
+        + " Multiple series_ids can be separated by commas.",
+    )
 
 
 class FredSearchData(SearchData):
     """FRED Search Data."""
 
-    __alias_dict__ = {"url": "link"}
-
+    __alias_dict__ = {
+        "url": "link",
+        "observation_start": "min_date",
+        "observation_end": "max_date",
+        "seasonal_adjustment": "season",
+    }
     popularity: Optional[int] = Field(
         default=None,
         description="Popularity of the series",
@@ -69,6 +84,14 @@ class FredSearchData(SearchData):
     group_popularity: Optional[int] = Field(
         default=None,
         description="Group popularity of the release",
+    )
+    region_type: Optional[str] = Field(
+        default=None,
+        description="The region type of the series.",
+    )
+    series_group: Optional[Union[str, int]] = Field(
+        default=None,
+        description="The series group ID of the series. This value is used to query for regional data.",
     )
 
 
@@ -96,7 +119,32 @@ class FredSearchFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the raw data."""
+        # pylint: disable=import-outside-toplevel
+        import asyncio  # noqa
+        from openbb_core.provider.utils.helpers import (
+            amake_request,
+            get_querystring,
+        )  # noqa
+
         api_key = credentials.get("fred_api_key") if credentials else ""
+
+        if query.series_id is not None:
+            results: List = []
+
+            async def get_one(_id: str):
+                """Get data for one series."""
+                data: Dict = {}
+                url = f"https://api.stlouisfed.org/geofred/series/group?series_id={_id}&api_key={api_key}&file_type=json"
+                response = await amake_request(url)
+                data = response.get("series_group")  # type: ignore
+                if data:
+                    data.update({"series_id": _id})
+                    results.append(data)
+
+            await asyncio.gather(*[get_one(_id) for _id in query.series_id.split(",")])
+
+            if results:
+                return results
 
         if query.is_release is True:
             url = f"https://api.stlouisfed.org/fred/releases?api_key={api_key}&file_type=json"
@@ -129,10 +177,14 @@ class FredSearchFetcher(
         query: FredSearchQueryParams, data: List[Dict], **kwargs: Any
     ) -> List[FredSearchData]:
         """Transform data."""
-        for observation in data:
-            id_column_name = "release_id" if query.is_release is True else "series_id"
-            observation[id_column_name] = observation.pop("id")
-            observation.pop("realtime_start", None)
-            observation.pop("realtime_end", None)
-
+        if not data:
+            raise EmptyDataError("No results were found with the supplied parameters.")
+        if query.series_id is None:
+            for observation in data:
+                id_column_name = (
+                    "release_id" if query.is_release is True else "series_id"
+                )
+                observation[id_column_name] = observation.pop("id")
+                observation.pop("realtime_start", None)
+                observation.pop("realtime_end", None)
         return [FredSearchData.model_validate(d) for d in data]

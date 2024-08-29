@@ -4,9 +4,6 @@
 
 from typing import Any, Dict, List, Optional, Union
 
-from finvizfinance.group.overview import Overview
-from finvizfinance.group.performance import Performance
-from finvizfinance.group.valuation import Valuation
 from openbb_core.provider.abstract.data import ForceInt
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.compare_groups import (
@@ -15,8 +12,9 @@ from openbb_core.provider.standard_models.compare_groups import (
 )
 from openbb_core.provider.utils.descriptions import DATA_DESCRIPTIONS
 from openbb_finviz.utils.definitions import GROUPS, GROUPS_DICT, METRICS
-from pandas import DataFrame
 from pydantic import Field, field_validator
+
+GROUPS_CHOICES = sorted(list(GROUPS_DICT))
 
 
 class FinvizCompareGroupsQueryParams(CompareGroupsQueryParams):
@@ -27,11 +25,13 @@ class FinvizCompareGroupsQueryParams(CompareGroupsQueryParams):
         description="US-listed stocks only."
         + " When a sector is selected, it is broken down by industry."
         + " The default is sector.",
+        json_schema_extra={"choices": GROUPS_CHOICES},  # type: ignore
     )
     metric: Union[METRICS, None] = Field(
         default="performance",
         description="Select from: performance, valuation, overview."
         + " The default is performance.",
+        json_schema_extra={"choices": ["performance", "valuation", "overview"]},
     )
 
 
@@ -79,42 +79,42 @@ class FinvizCompareGroupsData(CompareGroupsData):
     performance_1D: Optional[float] = Field(
         default=None,
         description="The performance in the last day, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_1W: Optional[float] = Field(
         default=None,
         description="The performance in the last week, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_1M: Optional[float] = Field(
         default=None,
         description="The performance in the last month, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_3M: Optional[float] = Field(
         default=None,
         description="The performance in the last quarter, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_6M: Optional[float] = Field(
         default=None,
         description="The performance in the last half year, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_1Y: Optional[float] = Field(
         default=None,
         description="The performance in the last year, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     performance_YTD: Optional[float] = Field(
         default=None,
         description="The performance in the year to date, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     dividend_yield: Optional[float] = Field(
         default=None,
         description="The dividend yield of the group, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     pe: Optional[float] = Field(
         default=None,
@@ -132,23 +132,23 @@ class FinvizCompareGroupsData(CompareGroupsData):
     eps_growth_past_5_years: Optional[float] = Field(
         default=None,
         description="The EPS growth of the group for the past 5 years, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     eps_growth_next_5_years: Optional[float] = Field(
         default=None,
         description="The estimated EPS growth of the groupo for the next 5 years,"
         + " as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     sales_growth_past_5_years: Optional[float] = Field(
         default=None,
         description="The sales growth of the group for the past 5 years, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     float_short: Optional[float] = Field(
         default=None,
         description="The percent of the float shorted for the group, as a normalized value.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
     )
     analyst_recommendation: Optional[float] = Field(
         default=None,
@@ -191,7 +191,7 @@ class FinvizCompareGroupsData(CompareGroupsData):
     @field_validator("market_cap", "volume", mode="before", check_fields=False)
     @classmethod
     def validate_abbreviated_numbers(cls, v):
-        """Checks for abbreviated string values."""
+        """Check for abbreviated string values."""
         if v is not None and isinstance(v, str):
             v = (
                 v.replace("M", "e+6")
@@ -224,7 +224,11 @@ class FinvizCompareGroupsFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the raw data from Finviz."""
-        results = []
+        # pylint: disable=import-outside-toplevel
+        from finvizfinance.group import Overview, Performance, Valuation
+        from pandas import DataFrame
+
+        results: List = []
         data = DataFrame()
         if query.metric == "performance":
             data = Performance().screener_view(

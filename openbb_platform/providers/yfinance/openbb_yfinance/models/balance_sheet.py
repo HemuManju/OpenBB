@@ -9,10 +9,10 @@ from openbb_core.provider.standard_models.balance_sheet import (
     BalanceSheetData,
     BalanceSheetQueryParams,
 )
+from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
 from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_core.provider.utils.helpers import to_snake_case
 from pydantic import Field, field_validator
-from yfinance import Ticker
 
 
 class YFinanceBalanceSheetQueryParams(BalanceSheetQueryParams):
@@ -21,7 +21,16 @@ class YFinanceBalanceSheetQueryParams(BalanceSheetQueryParams):
     Source: https://finance.yahoo.com/
     """
 
-    period: Optional[Literal["annual", "quarter"]] = Field(default="annual")
+    __json_schema_extra__ = {
+        "period": {
+            "choices": ["annual", "quarter"],
+        }
+    }
+
+    period: Literal["annual", "quarter", "ttm"] = Field(
+        default="annual",
+        description=QUERY_DESCRIPTIONS.get("period", ""),
+    )
 
 
 class YFinanceBalanceSheetData(BalanceSheetData):
@@ -68,6 +77,8 @@ class YFinanceBalanceSheetFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the data from the Yahoo Finance endpoints."""
+        from yfinance import Ticker  # pylint: disable=import-outside-toplevel
+
         period = "yearly" if query.period == "annual" else "quarterly"  # type: ignore
         data = Ticker(query.symbol).get_balance_sheet(
             as_dict=False, pretty=False, freq=period
@@ -76,7 +87,7 @@ class YFinanceBalanceSheetFetcher(
             raise EmptyDataError()
         data.index = [to_snake_case(i) for i in data.index]
         data = data.reset_index().sort_index(ascending=False).set_index("index")
-        data = data.convert_dtypes().fillna(0).replace(0, None).to_dict()
+        data = data.fillna("N/A").replace("N/A", None).to_dict()
         data = [{"period_ending": str(key), **value} for key, value in data.items()]
 
         data = json.loads(json.dumps(data))

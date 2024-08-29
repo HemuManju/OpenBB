@@ -1,4 +1,7 @@
+"""Test the Benzinga fetchers."""
+
 import pytest
+from openbb_benzinga.models.analyst_search import BenzingaAnalystSearchFetcher
 from openbb_benzinga.models.company_news import BenzingaCompanyNewsFetcher
 from openbb_benzinga.models.price_target import BenzingaPriceTargetFetcher
 from openbb_benzinga.models.world_news import BenzingaWorldNewsFetcher
@@ -11,6 +14,7 @@ test_credentials = UserService().default_user_settings.credentials.model_dump(
 
 @pytest.fixture(scope="module")
 def vcr_config():
+    """VCR configuration."""
     return {
         "filter_headers": [("User-Agent", None)],
         "filter_query_parameters": [
@@ -21,6 +25,7 @@ def vcr_config():
 
 @pytest.mark.record_http
 def test_benzinga_world_news_fetcher(credentials=test_credentials):
+    """Test the world news fetcher."""
     params = {"limit": 20}
 
     fetcher = BenzingaWorldNewsFetcher()
@@ -30,7 +35,8 @@ def test_benzinga_world_news_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_benzinga_company_news_fetcher(credentials=test_credentials):
-    params = {"symbol": "AAPL,MSFT"}
+    """Test the company news fetcher."""
+    params = {"symbol": "AAPL,MSFT", "limit": 20}
 
     fetcher = BenzingaCompanyNewsFetcher()
     result = fetcher.test(params, credentials)
@@ -39,8 +45,19 @@ def test_benzinga_company_news_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_benzinga_price_target_fetcher(credentials=test_credentials):
+    """Test the price target fetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = BenzingaPriceTargetFetcher()
+    result = fetcher.test(params, credentials)
+    assert result is None
+
+
+@pytest.mark.record_http
+def test_benzinga_analyst_search_fetcher(credentials=test_credentials):
+    """Test the analyst search fetcher."""
+    params = {"firm_name": "Barclays"}
+
+    fetcher = BenzingaAnalystSearchFetcher()
     result = fetcher.test(params, credentials)
     assert result is None

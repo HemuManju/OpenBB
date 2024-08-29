@@ -16,18 +16,14 @@ class IncomeStatementQueryParams(QueryParams):
     """Income Statement Query."""
 
     symbol: str = Field(description=QUERY_DESCRIPTIONS.get("symbol", ""))
-    period: str = Field(
-        default="annual",
-        description=QUERY_DESCRIPTIONS.get("period", ""),
-    )
     limit: Optional[NonNegativeInt] = Field(
         default=5, description=QUERY_DESCRIPTIONS.get("limit", "")
     )
 
     @field_validator("symbol", mode="before", check_fields=False)
     @classmethod
-    def upper_symbol(cls, v: str):
-        """Convert symbol to uppercase."""
+    def to_upper(cls, v: str):
+        """Convert field to uppercase."""
         return v.upper()
 
 

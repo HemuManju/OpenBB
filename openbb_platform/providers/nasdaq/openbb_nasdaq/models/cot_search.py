@@ -1,8 +1,9 @@
 """Nasdaq CFTC Commitment of Traders Reports Search Model."""
 
+# pylint: disable=unused-argument
+
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.cot_search import (
     CotSearchData,
@@ -31,6 +32,7 @@ class NasdaqCotSearchFetcher(
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> NasdaqCotSearchQueryParams:
+        """Transform the query params."""
         return NasdaqCotSearchQueryParams(**params)
 
     @staticmethod
@@ -40,8 +42,19 @@ class NasdaqCotSearchFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Search a curated list of CFTC Commitment of Traders Reports."""
+        # pylint: disable=import-outside-toplevel
+        from warnings import warn  # noqa
+        from pandas import DataFrame
+
+        # TODO: Remove this warning when removing from the fetcher_dict.
+        warn(
+            "This data set is no longer updated. Install `openbb-cftc` for replacement source of the same data."
+            + " This provider fetcher will be removed in a future version.",
+            category=FutureWarning,
+        )
+
         query_string = query.query  # noqa
-        available_cot = pd.DataFrame(CFTC).transpose()
+        available_cot = DataFrame(CFTC).transpose()
         available_cot.columns = available_cot.columns.str.lower()
         return (
             available_cot[
@@ -60,4 +73,5 @@ class NasdaqCotSearchFetcher(
         data: List[Dict],
         **kwargs: Any,
     ) -> List[NasdaqCotSearchData]:
+        """Transform the data."""
         return [NasdaqCotSearchData.model_validate(d) for d in data]

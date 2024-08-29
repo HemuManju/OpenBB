@@ -1,9 +1,9 @@
 """YFinance Equity Quote Model."""
 
 # pylint: disable=unused-argument
-import asyncio
-import warnings
+
 from typing import Any, Dict, List, Optional
+from warnings import warn
 
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.equity_quote import (
@@ -11,13 +11,12 @@ from openbb_core.provider.standard_models.equity_quote import (
     EquityQuoteQueryParams,
 )
 from pydantic import Field
-from yfinance import Ticker
-
-_warn = warnings.warn
 
 
 class YFinanceEquityQuoteQueryParams(EquityQuoteQueryParams):
     """YFinance Equity Quote Query."""
+
+    __json_schema_extra__ = {"symbol": {"multiple_items_allowed": True}}
 
 
 class YFinanceEquityQuoteData(EquityQuoteData):
@@ -77,6 +76,10 @@ class YFinanceEquityQuoteFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the raw data from YFinance."""
+        # pylint: disable=import-outside-toplevel
+        import asyncio  # noqa
+        from yfinance import Ticker  # noqa
+
         symbols = query.symbol.split(",")
         results = []
         fields = [
@@ -110,7 +113,7 @@ class YFinanceEquityQuoteFetcher(
             try:
                 ticker = Ticker(symbol).get_info()
             except Exception as e:
-                _warn(f"Error getting data for {symbol}: {e}")
+                warn(f"Error getting data for {symbol}: {e}")
             if ticker:
                 for field in fields:
                     if field in ticker:

@@ -2,19 +2,15 @@
 
 # pylint: disable=unused-argument
 
-import warnings
 from typing import Any, Dict, List, Optional
+from warnings import warn
 
-from finvizfinance.quote import finvizfinance
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.price_target import (
     PriceTargetData,
     PriceTargetQueryParams,
 )
-from pandas import DataFrame
 from pydantic import Field
-
-_warn = warnings.warn
 
 
 class FinvizPriceTargetQueryParams(PriceTargetQueryParams):
@@ -22,6 +18,8 @@ class FinvizPriceTargetQueryParams(PriceTargetQueryParams):
 
     Source: https://finviz.com/quote.ashx?
     """
+
+    __json_schema_extra__ = {"symbol": {"multiple_items_allowed": True}}
 
 
 class FinvizPriceTargetData(PriceTargetData):
@@ -64,18 +62,21 @@ class FinvizPriceTargetFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Return the raw data from the Finviz endpoint."""
+        # pylint: disable=import-outside-toplevel
+        from finvizfinance.quote import finvizfinance
+        from pandas import DataFrame
 
-        results = []
+        results: List[Dict] = []
 
         def get_one(symbol) -> List[Dict]:
             """Get the data for one symbol."""
             price_targets = DataFrame()
-            result = []
+            result: List[Dict] = []
             try:
                 data = finvizfinance(symbol)
                 price_targets = data.ticker_outer_ratings()
                 if price_targets is None or len(price_targets) == 0:
-                    _warn(f"Failed to get data for {symbol}")
+                    warn(f"Failed to get data for {symbol}")
                     return result
                 price_targets["symbol"] = symbol
                 prices = (
@@ -93,12 +94,12 @@ class FinvizPriceTargetFetcher(
                 ] = None
                 price_targets = price_targets.replace("", None).drop(columns="Price")
             except Exception as e:  # pylint: disable=W0718
-                _warn(f"Failed to get data for {symbol} -> {e}")
+                warn(f"Failed to get data for {symbol} -> {e}")
                 return result
             result = price_targets.to_dict(orient="records")
             return result
 
-        symbols = query.symbol.split(",")
+        symbols = query.symbol.split(",") if query.symbol else []
         for symbol in symbols:
             result = get_one(symbol)
             if result is not None and result != []:

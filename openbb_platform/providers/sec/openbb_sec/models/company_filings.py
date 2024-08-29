@@ -1,21 +1,22 @@
 """SEC Company Filings Model."""
 
+# pylint: disable=unused-argument
+
 from datetime import (
     date as dateType,
     datetime,
 )
 from typing import Any, Dict, List, Optional, Union
 
-import pandas as pd
-import requests
+from openbb_core.app.model.abstract.error import OpenBBError
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.company_filings import (
     CompanyFilingsData,
     CompanyFilingsQueryParams,
 )
 from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
+from openbb_core.provider.utils.errors import EmptyDataError
 from openbb_sec.utils.definitions import FORM_TYPES, HEADERS
-from openbb_sec.utils.helpers import sec_session_company_filings, symbol_map
 from pydantic import Field, field_validator
 
 
@@ -33,10 +34,9 @@ class SecCompanyFilingsQueryParams(CompanyFilingsQueryParams):
         description="Lookup filings by Central Index Key (CIK) instead of by symbol.",
         default=None,
     )
-    type: Optional[FORM_TYPES] = Field(
+    form_type: Optional[FORM_TYPES] = Field(
         description="Type of the SEC filing form.",
         default=None,
-        alias="form_type",
     )
     use_cache: bool = Field(
         description="Whether or not to use cache.  If True, cache will store for one day.",
@@ -116,6 +116,7 @@ class SecCompanyFilingsData(CompanyFilingsData):
     )
 
     @field_validator("report_date", mode="before", check_fields=False)
+    @classmethod
     def validate_report_date(cls, v: Optional[Union[str, dateType]]):
         """Validate report_date."""
         if isinstance(v, dateType):
@@ -131,7 +132,7 @@ class SecCompanyFilingsData(CompanyFilingsData):
 class SecCompanyFilingsFetcher(
     Fetcher[SecCompanyFilingsQueryParams, List[SecCompanyFilingsData]]
 ):
-    """Transform the query, extract and transform the data from the SEC endpoints."""
+    """SEC Company Filings Fetcher."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> SecCompanyFilingsQueryParams:
@@ -139,54 +140,111 @@ class SecCompanyFilingsFetcher(
         return SecCompanyFilingsQueryParams(**params)
 
     @staticmethod
-    def extract_data(
-        query: SecCompanyFilingsQueryParams,  # pylint: disable=unused-argument
+    async def aextract_data(
+        query: SecCompanyFilingsQueryParams,
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:
-        """Extracts the data from the SEC endpoint."""
-        filings = pd.DataFrame()
+        """Extract the data from the SEC endpoint."""
+        # pylint: disable=import-outside-toplevel
+        from aiohttp_client_cache import SQLiteBackend
+        from aiohttp_client_cache.session import CachedSession
+        from openbb_core.app.utils import get_user_cache_directory
+        from openbb_core.provider.utils.helpers import amake_request, amake_requests
+        from openbb_sec.utils.helpers import symbol_map
+        from pandas import DataFrame
+
+        filings = DataFrame()
 
         if query.symbol and not query.cik:
-            query.cik = symbol_map(query.symbol.lower(), use_cache=query.use_cache)
+            query.cik = await symbol_map(
+                query.symbol.lower(), use_cache=query.use_cache
+            )
             if not query.cik:
-                return []
+                raise OpenBBError(f"CIK not found for symbol {query.symbol}")
         if query.cik is None:
-            return []
+            raise OpenBBError("CIK or symbol must be provided.")
 
         # The leading 0s need to be inserted but are typically removed from the data to store as an integer.
-        if len(query.cik) != 10:
+        if len(query.cik) != 10:  # type: ignore
             cik_: str = ""
-            temp = 10 - len(query.cik)
+            temp = 10 - len(query.cik)  # type: ignore
             for i in range(temp):
                 cik_ = cik_ + "0"
-            query.cik = cik_ + query.cik
+            query.cik = cik_ + str(query.cik)  # type: ignore
 
         url = f"https://data.sec.gov/submissions/CIK{query.cik}.json"
-        r = (
-            requests.get(url, headers=HEADERS, timeout=5)
-            if query.use_cache is False
-            else sec_session_company_filings.get(url, headers=HEADERS, timeout=5)
+        data: Union[dict, List[dict]] = []
+        if query.use_cache is True:
+            cache_dir = f"{get_user_cache_directory()}/http/sec_company_filings"
+            async with CachedSession(
+                cache=SQLiteBackend(cache_dir, expire_after=3600 * 24)
+            ) as session:
+                try:
+                    data = await amake_request(url, headers=HEADERS, session=session)  # type: ignore
+                finally:
+                    await session.close()
+        else:
+            data = await amake_request(url, headers=HEADERS)  # type: ignore
+
+        # This seems to work for the data structure.
+        filings = (
+            DataFrame.from_records(data["filings"].get("recent"))  # type: ignore
+            if "filings" in data
+            else DataFrame()
         )
-        if r.status_code == 200:
-            data = r.json()
-            filings = pd.DataFrame.from_records(data["filings"]["recent"])
-            if len(filings) >= 1000:
-                new_urls = pd.DataFrame(data["filings"]["files"])
-                for i in new_urls.index:
-                    new_cik: str = data["filings"]["files"][i]["name"]
-                    new_url: str = "https://data.sec.gov/submissions/" + new_cik
-                    r_ = (
-                        requests.get(new_url, headers=HEADERS, timeout=5)
-                        if query.use_cache is False
-                        else sec_session_company_filings.get(
-                            new_url, headers=HEADERS, timeout=5
-                        )
-                    )
-                    if r_.status_code == 200:
-                        data_ = r_.json()
-                        additional_data = pd.DataFrame.from_records(data_)
-                        filings = pd.concat([filings, additional_data], axis=0)
+        results = filings.to_dict("records")
+
+        # If there are lots of filings, there will be custom pagination.
+        if (
+            (query.limit and len(filings) >= 1000)
+            or query.form_type is not None
+            or query.limit == 0
+        ):
+
+            async def callback(response, session):
+                """Response callback for excess company filings."""
+                result = await response.json()
+                if result:
+                    new_data = DataFrame.from_records(result)
+                    results.extend(new_data.to_dict("records"))
+
+            urls: List = []
+            new_urls = (
+                DataFrame(data["filings"].get("files"))  # type: ignore
+                if "filings" in data
+                else DataFrame()
+            )
+            for i in new_urls.index:
+                new_cik: str = data["filings"]["files"][i]["name"]  # type: ignore
+                new_url: str = "https://data.sec.gov/submissions/" + new_cik
+                urls.append(new_url)
+            if query.use_cache is True:
+                cache_dir = f"{get_user_cache_directory()}/http/sec_company_filings"
+                async with CachedSession(
+                    cache=SQLiteBackend(cache_dir, expire_after=3600 * 24)
+                ) as session:
+                    try:
+                        await amake_requests(urls, headers=HEADERS, session=session, response_callback=callback)  # type: ignore
+                    finally:
+                        await session.close()
+            else:
+                await amake_requests(urls, headers=HEADERS, response_callback=callback)  # type: ignore
+
+        return results
+
+    @staticmethod
+    def transform_data(
+        query: SecCompanyFilingsQueryParams, data: List[Dict], **kwargs: Any
+    ) -> List[SecCompanyFilingsData]:
+        """Transform the data."""
+        # pylint: disable=import-outside-toplevel
+        from pandas import DataFrame
+
+        if not data:
+            raise EmptyDataError(
+                f"No filings found for CIK {query.cik}, or symbol {query.symbol}"
+            )
         cols = [
             "reportDate",
             "filingDate",
@@ -204,7 +262,7 @@ class SecCompanyFilingsFetcher(
             "size",
         ]
         filings = (
-            pd.DataFrame(filings, columns=cols)
+            DataFrame(data, columns=cols)
             .fillna(value="N/A")
             .replace("N/A", None)
             .astype(str)
@@ -223,17 +281,15 @@ class SecCompanyFilingsFetcher(
         filings["filingDetailUrl"] = (
             base_url + filings["accessionNumber"] + "-index.htm"
         )
-        if "type" in query.model_dump() and query.type is not None:
-            filings = filings[filings["form"] == query.type]
+        if query.form_type:
+            filings = filings[filings["form"] == query.form_type.replace("_", " ")]
 
-        if "limit" in query.model_dump():
+        if query.limit:
             filings = filings.head(query.limit) if query.limit != 0 else filings
 
-        return filings.to_dict("records")
+        if len(filings) == 0:
+            raise EmptyDataError("No filings were found using the filters provided.")
 
-    @staticmethod
-    def transform_data(
-        query: SecCompanyFilingsQueryParams, data: List[Dict], **kwargs: Any
-    ) -> List[SecCompanyFilingsData]:
-        """Transforms the data."""
-        return [SecCompanyFilingsData.model_validate(d) for d in data]
+        return [
+            SecCompanyFilingsData.model_validate(d) for d in filings.to_dict("records")
+        ]

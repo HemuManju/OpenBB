@@ -1,3 +1,5 @@
+"""Tests for YFinance fetchers."""
+
 from datetime import date
 
 import pytest
@@ -13,7 +15,6 @@ from openbb_yfinance.models.currency_historical import YFinanceCurrencyHistorica
 from openbb_yfinance.models.equity_historical import YFinanceEquityHistoricalFetcher
 from openbb_yfinance.models.equity_profile import YFinanceEquityProfileFetcher
 from openbb_yfinance.models.equity_quote import YFinanceEquityQuoteFetcher
-from openbb_yfinance.models.etf_historical import YFinanceEtfHistoricalFetcher
 from openbb_yfinance.models.etf_info import YFinanceEtfInfoFetcher
 from openbb_yfinance.models.futures_curve import YFinanceFuturesCurveFetcher
 from openbb_yfinance.models.futures_historical import YFinanceFuturesHistoricalFetcher
@@ -32,6 +33,7 @@ from openbb_yfinance.models.losers import YFLosersFetcher
 from openbb_yfinance.models.market_indices import (
     YFinanceMarketIndicesFetcher,
 )
+from openbb_yfinance.models.options_chains import YFinanceOptionsChainsFetcher
 from openbb_yfinance.models.price_target_consensus import (
     YFinancePriceTargetConsensusFetcher,
 )
@@ -48,6 +50,7 @@ test_credentials = UserService().default_user_settings.credentials.model_dump(
 
 @pytest.fixture(scope="module")
 def vcr_config():
+    """VCR configuration."""
     return {
         "filter_headers": [
             ("User-Agent", None),
@@ -58,51 +61,30 @@ def vcr_config():
             ("period1", "MOCK_PERIOD_1"),
             ("period2", "MOCK_PERIOD_2"),
             ("crumb", "MOCK_CRUMB"),
+            ("date", "MOCK_DATE"),
         ],
     }
 
 
 @pytest.mark.record_http
-def test_y_finance_historical_dividends_fetcher(credentials=test_credentials):
-    params = {"symbol": "IBM"}
+def test_y_finance_options_chains_fetcher(credentials=test_credentials):
+    """Test YFinanceOptionsChainsFetcher."""
 
-    fetcher = YFinanceHistoricalDividendsFetcher()
-    result = fetcher.test(params, credentials)
-    assert result is None
+    params = {"symbol": "OXY"}
 
-
-@pytest.mark.record_http
-def test_y_finance_market_indices_fetcher(credentials=test_credentials):
-    params = {
-        "symbol": "^GSPC",
-        "start_date": date(2023, 1, 1),
-        "end_date": date(2023, 1, 10),
-    }
-
-    fetcher = YFinanceMarketIndicesFetcher()
-    result = fetcher.test(params, credentials)
-    assert result is None
-
-
-@pytest.mark.record_http
-def test_y_finance_index_historical_fetcher(credentials=test_credentials):
-    params = {
-        "symbol": "^GSPC",
-        "start_date": date(2023, 1, 1),
-        "end_date": date(2023, 1, 10),
-    }
-
-    fetcher = YFinanceIndexHistoricalFetcher()
+    fetcher = YFinanceOptionsChainsFetcher()
     result = fetcher.test(params, credentials)
     assert result is None
 
 
 @pytest.mark.record_http
 def test_y_finance_crypto_historical_fetcher(credentials=test_credentials):
+    """Test YFinanceCryptoHistoricalFetcher."""
     params = {
         "symbol": "BTCUSD",
         "start_date": date(2023, 1, 1),
         "end_date": date(2023, 1, 10),
+        "interval": "1d",
     }
 
     fetcher = YFinanceCryptoHistoricalFetcher()
@@ -111,18 +93,8 @@ def test_y_finance_crypto_historical_fetcher(credentials=test_credentials):
 
 
 @pytest.mark.record_http
-def test_y_finance_equity_historical_fetcher(credentials=test_credentials):
-    params = {
-        "symbol": "AAPL",
-    }
-
-    fetcher = YFinanceEquityHistoricalFetcher()
-    result = fetcher.test(params, credentials)
-    assert result is None
-
-
-@pytest.mark.record_http
 def test_y_finance_currency_historical_fetcher(credentials=test_credentials):
+    """Test YFinanceCurrencyHistoricalFetcher."""
     params = {
         "symbol": "EURUSD",
         "start_date": date(2023, 1, 1),
@@ -135,7 +107,61 @@ def test_y_finance_currency_historical_fetcher(credentials=test_credentials):
 
 
 @pytest.mark.record_http
+def test_y_finance_index_historical_fetcher(credentials=test_credentials):
+    """Test YFinanceIndexHistoricalFetcher."""
+    params = {
+        "symbol": "^GSPC",
+        "start_date": date(2023, 1, 1),
+        "end_date": date(2023, 1, 10),
+    }
+
+    fetcher = YFinanceIndexHistoricalFetcher()
+    result = fetcher.test(params, credentials)
+    assert result is None
+
+
+@pytest.mark.record_http
+def test_y_finance_equity_historical_fetcher(credentials=test_credentials):
+    """Test YFinanceEquityHistoricalFetcher."""
+    params = {
+        "symbol": "AAPL",
+        "start_date": date(2023, 1, 1),
+        "end_date": date(2023, 1, 10),
+        "interval": "1d",
+    }
+
+    fetcher = YFinanceEquityHistoricalFetcher()
+    result = fetcher.test(params, credentials)
+    assert result is None
+
+
+@pytest.mark.record_http
+def test_y_finance_historical_dividends_fetcher(credentials=test_credentials):
+    """Test YFinanceHistoricalDividendsFetcher."""
+    params = {"symbol": "IBM"}
+
+    fetcher = YFinanceHistoricalDividendsFetcher()
+    result = fetcher.test(params, credentials)
+    assert result is None
+
+
+@pytest.mark.record_http
+def test_y_finance_market_indices_fetcher(credentials=test_credentials):
+    """Test YFinanceMarketIndicesFetcher."""
+    params = {
+        "symbol": "^GSPC",
+        "start_date": date(2023, 1, 1),
+        "end_date": date(2023, 1, 10),
+    }
+
+    fetcher = YFinanceMarketIndicesFetcher()
+    result = fetcher.test(params, credentials)
+    assert result is None
+
+
+@pytest.mark.record_http
 def test_y_finance_futures_historical_fetcher(credentials=test_credentials):
+    """Test YFinanceFuturesHistoricalFetcher."""
     params = {
         "symbol": "ES=F",
         "start_date": date(2023, 1, 1),
@@ -150,6 +176,7 @@ def test_y_finance_futures_historical_fetcher(credentials=test_credentials):
 @pytest.mark.skip("Unreliable amount of data while recording test.")
 @pytest.mark.record_http
 def test_y_finance_futures_curve_fetcher(credentials=test_credentials):
+    """Test YFinanceFuturesCurveFetcher."""
     params = {"symbol": "ES"}
 
     fetcher = YFinanceFuturesCurveFetcher()
@@ -159,6 +186,7 @@ def test_y_finance_futures_curve_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_company_news_fetcher(credentials=test_credentials):
+    """Test YFinanceCompanyNewsFetcher."""
     params = {"symbol": "AAPL,MSFT"}
 
     fetcher = YFinanceCompanyNewsFetcher()
@@ -168,6 +196,7 @@ def test_y_finance_company_news_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_balance_sheet_fetcher(credentials=test_credentials):
+    """Test YFinanceBalanceSheetFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceBalanceSheetFetcher()
@@ -177,6 +206,7 @@ def test_y_finance_balance_sheet_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_cash_flow_statement_fetcher(credentials=test_credentials):
+    """Test YFinanceCashFlowStatementFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceCashFlowStatementFetcher()
@@ -186,6 +216,7 @@ def test_y_finance_cash_flow_statement_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_income_statement_fetcher(credentials=test_credentials):
+    """Test YFinanceIncomeStatementFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceIncomeStatementFetcher()
@@ -194,6 +225,7 @@ def test_y_finance_income_statement_fetcher(credentials=test_credentials):
 
 
 def test_y_finance_available_fetcher(credentials=test_credentials):
+    """Test YFinanceAvailableIndicesFetcher."""
     params = {}
 
     fetcher = YFinanceAvailableIndicesFetcher()
@@ -202,20 +234,8 @@ def test_y_finance_available_fetcher(credentials=test_credentials):
 
 
 @pytest.mark.record_http
-def test_y_finance_etf_historical_fetcher(credentials=test_credentials):
-    params = {
-        "symbol": "SPY",
-        "start_date": date(2023, 1, 1),
-        "end_date": date(2023, 6, 6),
-    }
-
-    fetcher = YFinanceEtfHistoricalFetcher()
-    result = fetcher.test(params, credentials)
-    assert result is None
-
-
-@pytest.mark.record_http
 def test_y_finance_active_fetcher(credentials=test_credentials):
+    """Test YFActiveFetcher."""
     params = {}
 
     fetcher = YFActiveFetcher()
@@ -225,6 +245,7 @@ def test_y_finance_active_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_gainers_fetcher(credentials=test_credentials):
+    """Test YFGainersFetcher."""
     params = {}
 
     fetcher = YFGainersFetcher()
@@ -234,6 +255,7 @@ def test_y_finance_gainers_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_losers_fetcher(credentials=test_credentials):
+    """Test YFLosersFetcher."""
     params = {}
 
     fetcher = YFLosersFetcher()
@@ -243,6 +265,7 @@ def test_y_finance_losers_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_undervalued_large_caps_fetcher(credentials=test_credentials):
+    """Test YFUndervaluedLargeCapsFetcher."""
     params = {}
 
     fetcher = YFUndervaluedLargeCapsFetcher()
@@ -252,6 +275,7 @@ def test_y_finance_undervalued_large_caps_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_undervalued_growth_equities_fetcher(credentials=test_credentials):
+    """Test YFUndervaluedGrowthEquitiesFetcher."""
     params = {}
 
     fetcher = YFUndervaluedGrowthEquitiesFetcher()
@@ -261,6 +285,7 @@ def test_y_finance_undervalued_growth_equities_fetcher(credentials=test_credenti
 
 @pytest.mark.record_http
 def test_y_finance_aggressive_small_caps_fetcher(credentials=test_credentials):
+    """Test YFAggressiveSmallCapsFetcher."""
     params = {}
 
     fetcher = YFAggressiveSmallCapsFetcher()
@@ -270,6 +295,7 @@ def test_y_finance_aggressive_small_caps_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_growth_tech_equities_fetcher(credentials=test_credentials):
+    """Test YFGrowthTechEquitiesFetcher."""
     params = {}
 
     fetcher = YFGrowthTechEquitiesFetcher()
@@ -279,6 +305,7 @@ def test_y_finance_growth_tech_equities_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_equity_profile_fetcher(credentials=test_credentials):
+    """Test YFinanceEquityProfileFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceEquityProfileFetcher()
@@ -288,6 +315,7 @@ def test_y_finance_equity_profile_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_equity_quote_fetcher(credentials=test_credentials):
+    """Test YFinanceEquityQuoteFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceEquityQuoteFetcher()
@@ -297,6 +325,7 @@ def test_y_finance_equity_quote_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_price_target_consensus_fetcher(credentials=test_credentials):
+    """Test YFinancePriceTargetConsensusFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinancePriceTargetConsensusFetcher()
@@ -306,6 +335,7 @@ def test_y_finance_price_target_consensus_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_share_statistics_fetcher(credentials=test_credentials):
+    """Test YFinanceShareStatisticsFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceShareStatisticsFetcher()
@@ -315,6 +345,7 @@ def test_y_finance_share_statistics_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_key_executives_fetcher(credentials=test_credentials):
+    """Test YFinanceKeyExecutivesFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceKeyExecutivesFetcher()
@@ -324,6 +355,7 @@ def test_y_finance_key_executives_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_key_metrics_fetcher(credentials=test_credentials):
+    """Test YFinanceKeyMetricsFetcher."""
     params = {"symbol": "AAPL"}
 
     fetcher = YFinanceKeyMetricsFetcher()
@@ -333,6 +365,7 @@ def test_y_finance_key_metrics_fetcher(credentials=test_credentials):
 
 @pytest.mark.record_http
 def test_y_finance_etf_info_fetcher(credentials=test_credentials):
+    """Test YFinanceEtfInfoFetcher."""
     params = {"symbol": "QQQ"}
 
     fetcher = YFinanceEtfInfoFetcher()

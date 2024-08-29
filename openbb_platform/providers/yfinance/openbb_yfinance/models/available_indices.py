@@ -1,8 +1,9 @@
 """Yahoo Finance Available Indices Model."""
 
+# pylint: disable=unused-argument
+
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.available_indices import (
     AvailableIndicesData,
@@ -43,11 +44,14 @@ class YFinanceAvailableIndicesFetcher(
 
     @staticmethod
     def extract_data(
-        query: YFinanceAvailableIndicesQueryParams,
+        query: YFinanceAvailableIndicesQueryParams,  # pylint disable=unused-argument
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
     ) -> List[Dict]:
-        indices = pd.DataFrame(INDICES).transpose().reset_index()
+        """Extract the data."""
+        from pandas import DataFrame  # pylint: disable=import-outside-toplevel
+
+        indices = DataFrame(INDICES).transpose().reset_index()
         indices.columns = ["code", "name", "ticker"]
 
         return indices.to_dict("records")

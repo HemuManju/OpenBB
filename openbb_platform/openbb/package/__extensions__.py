@@ -20,29 +20,32 @@ Routers:
     /regulators
 
 Extensions:
-    - commodity@1.0.0
-    - crypto@1.1.1
-    - currency@1.1.1
-    - derivatives@1.1.1
-    - economy@1.1.1
-    - equity@1.1.1
-    - etf@1.1.1
-    - fixedincome@1.1.1
-    - index@1.1.1
-    - news@1.1.1
-    - regulators@1.1.1
+    - commodity@1.2.1
+    - crypto@1.3.1
+    - currency@1.3.1
+    - derivatives@1.3.1
+    - economy@1.3.1
+    - equity@1.3.1
+    - etf@1.3.1
+    - fixedincome@1.3.1
+    - index@1.3.1
+    - news@1.3.1
+    - regulators@1.3.1
 
-    - benzinga@1.1.1
-    - federal_reserve@1.1.1
-    - fmp@1.1.1
-    - fred@1.1.1
-    - intrinio@1.1.1
-    - oecd@1.1.1
-    - polygon@1.1.1
-    - sec@1.1.1
-    - tiingo@1.1.1
-    - tradingeconomics@1.1.1
-    - yfinance@1.1.1    """
+    - benzinga@1.3.1
+    - bls@1.0.0b0
+    - cftc@1.0.0b0
+    - econdb@1.2.1
+    - federal_reserve@1.3.1
+    - fmp@1.3.1
+    - fred@1.3.1
+    - intrinio@1.3.1
+    - oecd@1.3.1
+    - polygon@1.3.1
+    - sec@1.3.1
+    - tiingo@1.3.1
+    - tradingeconomics@1.3.1
+    - yfinance@1.3.1    """
     # fmt: on
 
     def __repr__(self) -> str:

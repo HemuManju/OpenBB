@@ -20,6 +20,8 @@ class IntrinioEquityInfoQueryParams(EquityInfoQueryParams):
     Source: https://docs.intrinio.com/documentation/web_api/get_company_v2
     """
 
+    __json_schema_extra__ = {"symbol": {"multiple_items_allowed": True}}
+
 
 class IntrinioEquityInfoData(EquityInfoData):
     """Intrinio Equity Info Data."""
@@ -72,5 +74,5 @@ class IntrinioEquityInfoFetcher(
         data: List[Dict],
         **kwargs: Any,
     ) -> List[IntrinioEquityInfoData]:
-        """Transforms the data."""
+        """Transform the data."""
         return [IntrinioEquityInfoData.model_validate(d) for d in data]

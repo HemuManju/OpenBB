@@ -12,9 +12,6 @@ from openbb_core.provider.standard_models.equity_nbbo import (
     EquityNBBOQueryParams,
 )
 from openbb_core.provider.utils.descriptions import QUERY_DESCRIPTIONS
-from openbb_core.provider.utils.helpers import get_querystring
-from openbb_polygon.utils.helpers import get_data_one, map_tape
-from pandas import to_datetime
 from pydantic import Field, field_validator
 
 
@@ -45,33 +42,33 @@ class PolygonEquityNBBOQueryParams(EquityNBBOQueryParams):
     )
     timestamp_lt: Optional[Union[datetime, str]] = Field(
         default=None,
-        description="""
-            Query by datetime, less than. Either a date with the format YYYY-MM-DD or a TZ-aware timestamp string,
-            YYYY-MM-DDTH:M:S.000000000-04:00". Include all nanoseconds and the 'T' between the day and hour.
-        """,
+        description=(
+            "Query by datetime, less than. Either a date with the format 'YYYY-MM-DD' or a TZ-aware timestamp string, "
+            "'YYYY-MM-DDTH:M:S.000000000-04:00'. Include all nanoseconds and the 'T' between the day and hour."
+        ),
     )
     timestamp_gt: Optional[Union[datetime, str]] = Field(
         default=None,
-        description="""
-            Query by datetime, greater than. Either a date with the format YYYY-MM-DD or a TZ-aware timestamp string,
-            YYYY-MM-DDTH:M:S.000000000-04:00". Include all nanoseconds and the 'T' between the day and hour.
-        """,
+        description=(
+            "Query by datetime, greater than. Either a date with the format 'YYYY-MM-DD' or a TZ-aware timestamp string, "
+            "'YYYY-MM-DDTH:M:S.000000000-04:00'. Include all nanoseconds and the 'T' between the day and hour."
+        ),
     )
     timestamp_lte: Optional[Union[datetime, str]] = Field(
         default=None,
-        description="""
-            Query by datetime, less than or equal to.
-            Either a date with the format YYYY-MM-DD or a TZ-aware timestamp string,
-            YYYY-MM-DDTH:M:S.000000000-04:00". Include all nanoseconds and the 'T' between the day and hour.
-        """,
+        description=(
+            "Query by datetime, less than or equal to. Either a date with the format 'YYYY-MM-DD' or a TZ-aware "
+            "timestamp string, 'YYYY-MM-DDTH:M:S.000000000-04:00'. Include all nanoseconds and the 'T' between the "
+            "day and hour."
+        ),
     )
     timestamp_gte: Optional[Union[datetime, str]] = Field(
         default=None,
-        description="""
-            Query by datetime, greater than or equal to.
-            Either a date with the format YYYY-MM-DD or a TZ-aware timestamp string,
-            YYYY-MM-DDTH:M:S.000000000-04:00". Include all nanoseconds and the 'T' between the day and hour.
-        """,
+        description=(
+            "Query by datetime, greater than or equal to. Either a date with the format 'YYYY-MM-DD' or a TZ-aware "
+            "timestamp string, 'YYYY-MM-DDTH:M:S.000000000-04:00'. Include all nanoseconds and the 'T' between the "
+            "day and hour."
+        ),
     )
 
     @field_validator("limit", mode="before", check_fields=False)
@@ -92,38 +89,38 @@ class PolygonEquityNBBOData(EquityNBBOData):
     conditions: Optional[Union[str, List[int], List[str]]] = Field(
         default=None, description="A list of condition codes.", alias="conditions"
     )
-    indicators: Optional[List] = Field(
+    indicators: Optional[List[int]] = Field(
         default=None, description="A list of indicator codes.", alias="indicators"
     )
     sequence_num: Optional[int] = Field(
         default=None,
-        description="""
-            The sequence number represents the sequence in which message events happened.
-            These are increasing and unique per ticker symbol, but will not always be sequential
-            (e.g., 1, 2, 6, 9, 10, 11)
-        """,
+        description=(
+            "The sequence number represents the sequence in which message events happened. "
+            "These are increasing and unique per ticker symbol, but will not always be sequential "
+            "(e.g., 1, 2, 6, 9, 10, 11)"
+        ),
         alias="sequence_number",
     )
     participant_timestamp: Optional[datetime] = Field(
         default=None,
-        description="""
-            The nanosecond accuracy Participant/Exchange Unix Timestamp.
-            This is the timestamp of when the quote was actually generated at the exchange.
-        """,
+        description=(
+            "The nanosecond accuracy Participant/Exchange Unix Timestamp. "
+            "This is the timestamp of when the quote was actually generated at the exchange."
+        ),
     )
     sip_timestamp: Optional[datetime] = Field(
         default=None,
-        description="""
-            The nanosecond accuracy SIP Unix Timestamp.
-            This is the timestamp of when the SIP received this quote from the exchange which produced it.
-        """,
+        description=(
+            "The nanosecond accuracy SIP Unix Timestamp. "
+            "This is the timestamp of when the SIP received this quote from the exchange which produced it."
+        ),
     )
     trf_timestamp: Optional[datetime] = Field(
         default=None,
-        description="""
-            The nanosecond accuracy TRF (Trade Reporting Facility) Unix Timestamp.
-            This is the timestamp of when the trade reporting facility received this quote.
-        """,
+        description=(
+            "The nanosecond accuracy TRF (Trade Reporting Facility) Unix Timestamp. "
+            "This is the timestamp of when the trade reporting facility received this quote."
+        ),
     )
 
     @field_validator(
@@ -136,6 +133,9 @@ class PolygonEquityNBBOData(EquityNBBOData):
     @classmethod
     def date_validate(cls, v):  # pylint: disable=E0213
         """Return formatted datetime."""
+        # pylint: disable=import-outside-toplevel
+        from pandas import to_datetime
+
         return (
             to_datetime(v, unit="ns", origin="unix", utc=True).tz_convert("US/Eastern")
             if v
@@ -146,7 +146,7 @@ class PolygonEquityNBBOData(EquityNBBOData):
 class PolygonEquityNBBOFetcher(
     Fetcher[PolygonEquityNBBOQueryParams, List[PolygonEquityNBBOData]]
 ):
-    """Transform the query, extract and transform the data from the Polygon endpoints."""
+    """Polygon Equity NBBO Fetcher."""
 
     @staticmethod
     def transform_query(params: Dict[str, Any]) -> PolygonEquityNBBOQueryParams:
@@ -160,6 +160,10 @@ class PolygonEquityNBBOFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the data from the Polygon endpoint."""
+        # pylint: disable=import-outside-toplevel
+        from openbb_core.provider.utils.helpers import get_querystring
+        from openbb_polygon.utils.helpers import get_data_one, map_tape
+
         api_key = credentials.get("polygon_api_key") if credentials else ""
         data: List[Dict] = []
         base_url = "https://api.polygon.io/v3"
@@ -208,6 +212,7 @@ class PolygonEquityNBBOFetcher(
 
         return data
 
+    # pylint: disable=unused-argument
     @staticmethod
     def transform_data(
         query: PolygonEquityNBBOQueryParams,

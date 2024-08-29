@@ -1,16 +1,18 @@
 """Yahoo Finance Asset Performance Growth Tech Equities Model."""
 
-import re
-from typing import Any, Dict, List, Optional
+# pylint: disable=unused-argument
 
-import pandas as pd
-import requests
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.equity_performance import (
     EquityPerformanceData,
     EquityPerformanceQueryParams,
 )
 from pydantic import Field
+
+if TYPE_CHECKING:
+    from pandas import DataFrame
 
 
 class YFGrowthTechEquitiesQueryParams(EquityPerformanceQueryParams):
@@ -35,10 +37,12 @@ class YFGrowthTechEquitiesData(EquityPerformanceData):
         "pe_ratio_ttm": "PE Ratio (TTM)",
     }
 
-    market_cap: str = Field(
+    market_cap: Optional[float] = Field(
+        default=None,
         description="Market Cap.",
     )
-    avg_volume_3_months: float = Field(
+    avg_volume_3_months: Optional[float] = Field(
+        default=None,
         description="Average volume over the last 3 months in millions.",
     )
     pe_ratio_ttm: Optional[float] = Field(
@@ -62,35 +66,42 @@ class YFGrowthTechEquitiesFetcher(
         query: YFGrowthTechEquitiesQueryParams,
         credentials: Optional[Dict[str, str]],
         **kwargs: Any,
-    ) -> pd.DataFrame:
+    ) -> "DataFrame":
         """Get data from YF."""
+        # pylint: disable=import-outside-toplevel
+        import io  # noqa
+        import re  # noqa
+        from openbb_core.provider.utils.helpers import make_request  # noqa
+        from pandas import read_html  # noqa
+
         headers = {"user_agent": "Mozilla/5.0"}
-        html = requests.get(
+        html = make_request(
             "https://finance.yahoo.com/screener/predefined/growth_technology_stocks",
             headers=headers,
-            timeout=10,
         ).text
         html_clean = re.sub(r"(<span class=\"Fz\(0\)\">).*?(</span>)", "", html)
-        df = (
-            pd.read_html(html_clean, header=None)[0]
-            .dropna(how="all", axis=1)
-            .fillna("-")
-            .replace("-", None)
+        df = read_html(io.StringIO(html_clean), header=None)[0].dropna(
+            how="all", axis=1
         )
+
         return df
 
     @staticmethod
     def transform_data(
         query: EquityPerformanceQueryParams,
-        data: pd.DataFrame,
+        data: "DataFrame",
         **kwargs: Any,
     ) -> List[YFGrowthTechEquitiesData]:
         """Transform data."""
-        data["% Change"] = data["% Change"].str.replace("%", "")
-        data["Volume"] = data["Volume"].str.replace("M", "").astype(float) * 1000000
-        data["Avg Vol (3 month)"] = (
-            data["Avg Vol (3 month)"].str.replace("M", "").astype(float) * 1000000
-        )
-        data = data.to_dict(orient="records")
-        data = sorted(data, key=lambda d: d["Volume"], reverse=query.sort == "desc")
-        return [YFGrowthTechEquitiesData.model_validate(d) for d in data]
+        # pylint: disable=import-outside-toplevel
+        from openbb_yfinance.utils.helpers import df_transform_numbers
+
+        columns = ["Market Cap", "Avg Vol (3 month)", "Volume", "% Change"]
+
+        data = df_transform_numbers(data=data, columns=columns)
+        data = data.fillna("N/A").replace("N/A", None)
+        data["Name"] = data["Name"].fillna(data["Symbol"])
+
+        return [
+            YFGrowthTechEquitiesData.model_validate(d) for d in data.to_dict("records")
+        ]

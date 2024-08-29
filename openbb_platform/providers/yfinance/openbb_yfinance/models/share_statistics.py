@@ -1,13 +1,13 @@
 """YFinance Share Statistics Model."""
 
 # pylint: disable=unused-argument
-import asyncio
-import warnings
+
 from datetime import (
     date as dateType,
     datetime,
 )
 from typing import Any, Dict, List, Optional
+from warnings import warn
 
 from openbb_core.provider.abstract.fetcher import Fetcher
 from openbb_core.provider.standard_models.share_statistics import (
@@ -15,13 +15,12 @@ from openbb_core.provider.standard_models.share_statistics import (
     ShareStatisticsQueryParams,
 )
 from pydantic import Field, field_validator
-from yfinance import Ticker
-
-_warn = warnings.warn
 
 
 class YFinanceShareStatisticsQueryParams(ShareStatisticsQueryParams):
     """YFinance Share Statistics Query."""
+
+    __json_schema_extra__ = {"symbol": {"multiple_items_allowed": True}}
 
 
 class YFinanceShareStatisticsData(ShareStatisticsData):
@@ -47,7 +46,7 @@ class YFinanceShareStatisticsData(ShareStatisticsData):
     short_percent_of_float: Optional[float] = Field(
         default=None,
         description="Percentage of shares that are reported short, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
         alias="shortPercentOfFloat",
     )
     days_to_cover: Optional[float] = Field(
@@ -68,19 +67,19 @@ class YFinanceShareStatisticsData(ShareStatisticsData):
     insider_ownership: Optional[float] = Field(
         default=None,
         description="Percentage of shares held by insiders, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
         alias="heldPercentInsiders",
     )
     institution_ownership: Optional[float] = Field(
         default=None,
         description="Percentage of shares held by institutions, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
         alias="heldPercentInstitutions",
     )
     institution_float_ownership: Optional[float] = Field(
         default=None,
         description="Percentage of float held by institutions, as a normalized percent.",
-        json_schema_extra={"unit_measurement": "percent", "frontend_multiply": 100},
+        json_schema_extra={"x-unit_measurement": "percent", "x-frontend_multiply": 100},
         alias="institutionsFloatPercentHeld",
     )
     institutions_count: Optional[int] = Field(
@@ -115,6 +114,10 @@ class YFinanceShareStatisticsFetcher(
         **kwargs: Any,
     ) -> List[Dict]:
         """Extract the raw data from YFinance."""
+        # pylint: disable=import-outside-toplevel
+        import asyncio  # noqa
+        from yfinance import Ticker  # noqa
+
         symbols = query.symbol.split(",")
         results = []
         fields = [
@@ -145,7 +148,7 @@ class YFinanceShareStatisticsFetcher(
                 if major_holders:
                     ticker.update(major_holders)  # type: ignore
             except Exception as e:
-                _warn(f"Error getting data for {symbol}: {e}")
+                warn(f"Error getting data for {symbol}: {e}")
             if ticker:
                 for field in fields:
                     if field in ticker:

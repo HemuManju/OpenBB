@@ -281,6 +281,9 @@ class Router:
             kwargs["responses"] = kwargs.get(
                 "responses",
                 {
+                    204: {
+                        "description": "Empty response",
+                    },
                     400: {
                         "model": OpenBBErrorResponse,
                         "description": "No Results Found",
@@ -289,6 +292,10 @@ class Router:
                     500: {
                         "model": OpenBBErrorResponse,
                         "description": "Internal Error",
+                    },
+                    502: {
+                        "model": OpenBBErrorResponse,
+                        "description": "Unauthorized",
                     },
                 },
             )
@@ -430,7 +437,7 @@ class SignatureInspector:
         if not isinstance(results_type, type(None)):
             results_type = results_type_args[0]
 
-        is_list = get_origin(results_type) == list
+        is_list = isinstance(get_origin(results_type), list)
         inner_type = (
             results_type_args[0] if is_list and results_type_args else results_type
         )
